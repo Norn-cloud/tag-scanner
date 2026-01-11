@@ -14,7 +14,7 @@ import { TransactionSummary } from "@/components/transaction-summary";
 import { GoldPriceInput } from "@/components/gold-price-input";
 import { CameraCapture } from "@/components/camera-capture";
 import { TradeUI } from "@/components/trade-ui";
-import { FixUI, type FixData } from "@/components/fix-ui";
+// import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
 import { Coins, Sun, Moon, Camera, PenLine } from "lucide-react";
 import {
@@ -112,11 +112,11 @@ export default function Home() {
     [activeTab, transactionBase]
   );
 
-  const [fixResult, setFixResult] = useState<FixData | null>(null);
-
-  const handleFixComplete = useCallback((data: FixData) => {
-    setFixResult(data);
-  }, []);
+  // FIX feature disabled for now
+  // const [fixResult, setFixResult] = useState<FixData | null>(null);
+  // const handleFixComplete = useCallback((data: FixData) => {
+  //   setFixResult(data);
+  // }, []);
 
   const updateItemPrice = useCallback((id: string, price: number) => {
     setItems((prev) =>
@@ -161,7 +161,6 @@ export default function Home() {
 
   const clearTransaction = () => {
     setItems([]);
-    setFixResult(null);
   };
 
   if (showCamera) {
@@ -219,7 +218,7 @@ export default function Home() {
             clearTransaction();
           }}
         >
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="SELL" className="text-sm">
               {t("transaction.sell")}
             </TabsTrigger>
@@ -229,9 +228,11 @@ export default function Home() {
             <TabsTrigger value="TRADE" className="text-sm">
               {t("transaction.trade")}
             </TabsTrigger>
+            {/* FIX tab hidden for now
             <TabsTrigger value="FIX" className="text-sm">
               {t("transaction.fix")}
             </TabsTrigger>
+            */}
           </TabsList>
 
           <div className="mt-4 space-y-4">
@@ -246,45 +247,6 @@ export default function Home() {
                 onShowCamera={() => setShowCamera(true)}
                 customerMode={customerMode}
               />
-            ) : activeTab === "FIX" ? (
-              fixResult ? (
-                <Card className="border-2 border-blue-500/50 bg-blue-500/5">
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center justify-between">
-                      <span>{t("fix.confirmFix")}</span>
-                      <Button variant="ghost" size="sm" onClick={clearTransaction}>
-                        {t("common.clear")}
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("fix.description")}</span>
-                      <span>{fixResult.description}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("fix.serviceFee")}</span>
-                      <span>{fixResult.baseFee} {t("common.egp")}</span>
-                    </div>
-                    {fixResult.weightAddedGrams > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t("fix.goldAdded")}</span>
-                        <span className="text-amber-600">
-                          {fixResult.weightAddedGrams}g @ {fixResult.karat}K
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-2 border-t">
-                      <span className="font-medium">{t("common.total")}</span>
-                      <span className="text-xl font-bold text-blue-600">
-                        {fixResult.totalPrice.toLocaleString()} {t("common.egp")}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <FixUI goldPrices={goldPrices} onComplete={handleFixComplete} />
-              )
             ) : (
               <>
                 <Card>
