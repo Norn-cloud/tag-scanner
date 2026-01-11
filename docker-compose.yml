@@ -1,0 +1,21 @@
+services:
+  tag-scanner:
+    build: .
+    container_name: tag-scanner
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tag-scanner.rule=Host(`scan.shop-royalgold.com`)"
+      - "traefik.http.routers.tag-scanner.entrypoints=websecure"
+      - "traefik.http.routers.tag-scanner.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tag-scanner.loadbalancer.server.port=3000"
+    networks:
+      - traefik-net
+
+networks:
+  traefik-net:
+    external: true
