@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "ماسح التاج",
+    "scan": "مسح التاج",
+    "manual": "إدخال يدوي",
+    "settings": "الإعدادات",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "total": "الإجمالي",
+    "price": "السعر",
+    "weight": "الوزن",
+    "karat": "العيار",
+    "origin": "المنشأ",
+    "sku": "الكود",
+    "cogs": "التكلفة"
+  },
+  "transaction": {
+    "sell": "بيع",
+    "buy": "شراء",
+    "trade": "استبدال",
+    "fix": "إصلاح",
+    "newTransaction": "معاملة جديدة",
+    "totalIn": "إجمالي الداخل",
+    "totalOut": "إجمالي الخارج",
+    "netAmount": "الصافي",
+    "margin": "الهامش",
+    "customerPays": "يدفع العميل",
+    "customerReceives": "يستلم العميل"
+  },
+  "item": {
+    "italian": "إيطالي",
+    "egyptian": "مصري",
+    "used": "مستعمل",
+    "jewelry": "مجوهرات",
+    "coin": "عملة",
+    "ingot": "سبيكة",
+    "lightPiece": "قطعة خفيفة",
+    "packaged": "معلب",
+    "locked": "مقفل",
+    "unlock": "فتح القفل",
+    "lock": "قفل"
+  },
+  "prices": {
+    "goldPrice": "سعر الذهب",
+    "fxRate": "سعر الصرف",
+    "usdToEgp": "دولار/جنيه",
+    "refreshPrice": "تحديث السعر",
+    "lastUpdated": "آخر تحديث",
+    "hoursAgo": "ساعات مضت",
+    "staleWarning": "بيانات السعر قديمة. يُنصح بالتحديث.",
+    "deduction": "الخصم",
+    "markup": "المصنعية"
+  },
+  "warnings": {
+    "belowRecommended": "أقل من السعر الموصى به",
+    "nearCogs": "قريب من حد التكلفة",
+    "belowCogs": "أقل من التكلفة - خسارة!",
+    "priceSafe": "السعر مناسب"
+  },
+  "scan": {
+    "captureTag": "تصوير التاج",
+    "scanning": "جاري المسح...",
+    "retry": "إعادة المحاولة",
+    "usePhoto": "استخدام الصورة",
+    "verifyData": "تحقق من البيانات",
+    "tagImage": "صورة التاج"
+  }
+}

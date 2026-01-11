@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "Tag Scanner",
+    "scan": "Scan Tag",
+    "manual": "Manual Entry",
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "total": "Total",
+    "price": "Price",
+    "weight": "Weight",
+    "karat": "Karat",
+    "origin": "Origin",
+    "sku": "SKU",
+    "cogs": "COGS"
+  },
+  "transaction": {
+    "sell": "Sell",
+    "buy": "Buy",
+    "trade": "Trade",
+    "fix": "Fix",
+    "newTransaction": "New Transaction",
+    "totalIn": "Total In",
+    "totalOut": "Total Out",
+    "netAmount": "Net Amount",
+    "margin": "Margin",
+    "customerPays": "Customer Pays",
+    "customerReceives": "Customer Receives"
+  },
+  "item": {
+    "italian": "Italian",
+    "egyptian": "Egyptian",
+    "used": "Used",
+    "jewelry": "Jewelry",
+    "coin": "Coin",
+    "ingot": "Ingot",
+    "lightPiece": "Light Piece",
+    "packaged": "Packaged",
+    "locked": "Locked",
+    "unlock": "Unlock",
+    "lock": "Lock"
+  },
+  "prices": {
+    "goldPrice": "Gold Price",
+    "fxRate": "FX Rate",
+    "usdToEgp": "USD/EGP",
+    "refreshPrice": "Refresh Price",
+    "lastUpdated": "Last updated",
+    "hoursAgo": "hours ago",
+    "staleWarning": "Price data is stale. Consider refreshing.",
+    "deduction": "Deduction",
+    "markup": "Markup"
+  },
+  "warnings": {
+    "belowRecommended": "Below recommended price",
+    "nearCogs": "Near cost floor",
+    "belowCogs": "Below cost - losing money!",
+    "priceSafe": "Price is healthy"
+  },
+  "scan": {
+    "captureTag": "Capture Tag",
+    "scanning": "Scanning...",
+    "retry": "Retry",
+    "usePhoto": "Use Photo",
+    "verifyData": "Verify Scanned Data",
+    "tagImage": "Tag Image"
+  }
+}
