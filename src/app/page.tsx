@@ -1,25 +1,29 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useCallback, useMemo } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { ManualEntryDialog } from "@/components/manual-entry-form";
 import { ItemCard } from "@/components/item-card";
 import { TransactionSummary } from "@/components/transaction-summary";
 import { GoldPriceInput } from "@/components/gold-price-input";
 import { CameraCapture } from "@/components/camera-capture";
 import { setLocaleCookie } from "@/lib/locale";
+import { Coins, Sun, Moon, Camera, PenLine } from "lucide-react";
 import {
   type Item,
   type Transaction,
   type TransactionType,
   type GoldPrices,
+  type Origin,
+  type Karat,
+  type ItemCategory,
+  type ItemSource,
 } from "@/lib/config";
 import { calculateItemPrice, calculateTransactionTotals } from "@/lib/pricing";
 
@@ -31,6 +35,7 @@ const defaultGoldPrices: GoldPrices = {
 
 export default function Home() {
   const t = useTranslations();
+  const locale = useLocale();
   const { theme, setTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<TransactionType>("SELL");
@@ -42,30 +47,42 @@ export default function Home() {
   const [showCamera, setShowCamera] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
 
-  const transaction: Transaction = {
-    id: "draft",
+  const transactionBase = useMemo(() => ({
+    id: "draft" as const,
     type: activeTab,
-    items,
     deductionPercent: activeTab === "TRADE" ? 0 : 0.02,
     goldPricePerGram: goldPrices,
     fxRateUsdToEgp: fxRate,
+  }), [activeTab, goldPrices, fxRate]);
+
+  const transaction: Transaction = useMemo(() => ({
+    ...transactionBase,
+    items,
     ...calculateTransactionTotals({
-      id: "draft",
-      type: activeTab,
+      ...transactionBase,
       items,
-      deductionPercent: activeTab === "TRADE" ? 0 : 0.02,
-      goldPricePerGram: goldPrices,
-      fxRateUsdToEgp: fxRate,
       totalIn: 0,
       totalOut: 0,
       netAmount: 0,
       totalMargin: 0,
       marginPercent: 0,
     }),
-  };
+  }), [transactionBase, items]);
+
+  interface ItemFormData {
+    origin: Origin;
+    weightGrams: string;
+    karat: Karat;
+    cogsFromTag: string;
+    sku: string;
+    category: ItemCategory;
+    isLightPiece: boolean;
+    source: ItemSource | undefined;
+    isPackagedBtc: boolean;
+  }
 
   const addItem = useCallback(
-    (formData: any) => {
+    (formData: ItemFormData) => {
       const newItem: Item = {
         id: crypto.randomUUID(),
         origin: formData.origin,
@@ -83,13 +100,13 @@ export default function Home() {
         direction: activeTab === "BUY" ? "IN" : "OUT",
       };
 
-      const price = calculateItemPrice(newItem, transaction);
+      const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
       newItem.calculatedPrice = price;
       newItem.adjustedPrice = price;
 
       setItems((prev) => [...prev, newItem]);
     },
-    [activeTab, transaction]
+    [activeTab, transactionBase]
   );
 
   const updateItemPrice = useCallback((id: string, price: number) => {
@@ -128,8 +145,7 @@ export default function Home() {
   }, []);
 
   const toggleLocale = async () => {
-    const currentLocale = document.documentElement.lang;
-    const newLocale = currentLocale === "ar" ? "en" : "ar";
+    const newLocale = locale === "ar" ? "en" : "ar";
     await setLocaleCookie(newLocale);
     window.location.reload();
   };
@@ -154,17 +170,17 @@ export default function Home() {
           <h1 className="text-lg font-bold">{t("common.appName")}</h1>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" onClick={() => setShowPrices(!showPrices)}>
-              💰
+              <Coins className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={toggleLocale}>
-              {typeof window !== "undefined" && document.documentElement.lang === "ar" ? "EN" : "ع"}
+              {locale === "ar" ? "EN" : "ع"}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
-              {theme === "dark" ? "☀️" : "🌙"}
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -221,7 +237,7 @@ export default function Home() {
                         onClick={clearTransaction}
                         className="text-xs text-muted-foreground"
                       >
-                        Clear
+                        {t("common.clear")}
                       </Button>
                     )}
                     <Badge variant="secondary">{t(`transaction.${activeTab.toLowerCase()}`)}</Badge>
@@ -231,17 +247,17 @@ export default function Home() {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <Button
-                    className="h-20 text-base flex-col gap-1"
+                    className="h-20 text-base flex-col gap-2"
                     variant="outline"
                     onClick={() => setShowCamera(true)}
                   >
-                    <span className="text-2xl">📷</span>
+                    <Camera className="h-6 w-6" />
                     <span>{t("common.scan")}</span>
                   </Button>
                   <ManualEntryDialog
                     trigger={
-                      <Button className="h-20 text-base flex-col gap-1" variant="outline">
-                        <span className="text-2xl">✏️</span>
+                      <Button className="h-20 text-base flex-col gap-2" variant="outline">
+                        <PenLine className="h-6 w-6" />
                         <span>{t("common.manual")}</span>
                       </Button>
                     }
@@ -255,10 +271,10 @@ export default function Home() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">
-                    Items ({items.length})
+                    {t("common.items")} ({items.length})
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Customer View</span>
+                    <span className="text-sm text-muted-foreground">{t("common.customerView")}</span>
                     <Switch
                       checked={customerMode}
                       onCheckedChange={setCustomerMode}

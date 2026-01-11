@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Camera, X, RotateCcw, Check } from "lucide-react";
 
 interface CameraCaptureProps {
   onCapture: (imageData: string) => void;
@@ -15,9 +15,18 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
   const t = useTranslations();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [captured, setCaptured] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      setIsStreaming(false);
+    }
+  }, []);
 
   const startCamera = useCallback(async () => {
     try {
@@ -28,28 +37,24 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
           height: { ideal: 1080 },
         },
       });
-      setStream(mediaStream);
+      streamRef.current = mediaStream;
+      setIsStreaming(true);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
-    } catch (err) {
+    } catch {
       setError("Camera access denied or unavailable");
     }
   }, []);
 
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-  }, [stream]);
-
   useEffect(() => {
     startCamera();
     return () => {
-      stopCamera();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
     };
-  }, []);
+  }, [startCamera]);
 
   const captureImage = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -123,15 +128,17 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-14 text-lg"
+              className="flex-1 h-14 text-lg gap-2"
               onClick={retake}
             >
+              <RotateCcw className="h-5 w-5" />
               {t("scan.retry")}
             </Button>
             <Button
-              className="flex-1 h-14 text-lg"
+              className="flex-1 h-14 text-lg gap-2"
               onClick={confirmCapture}
             >
+              <Check className="h-5 w-5" />
               {t("scan.usePhoto")}
             </Button>
           </div>
@@ -145,13 +152,15 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
                 onCancel();
               }}
             >
-              ✕
+              <X className="h-5 w-5" />
             </Button>
             <Button
-              className="flex-1 h-14 text-lg"
+              className="flex-1 h-14 text-lg gap-2"
               onClick={captureImage}
+              disabled={!isStreaming}
             >
-              📷 {t("scan.captureTag")}
+              <Camera className="h-5 w-5" />
+              {t("scan.captureTag")}
             </Button>
           </div>
         )}
