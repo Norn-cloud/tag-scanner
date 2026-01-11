@@ -307,25 +307,37 @@ export default function Home() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        className="h-20 text-base flex-col gap-2"
-                        variant="outline"
-                        onClick={() => setShowCamera(true)}
-                      >
-                        <Camera className="h-6 w-6" />
-                        <span>{t("common.scan")}</span>
-                      </Button>
+                    {activeTab === "SELL" ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          className="h-20 text-base flex-col gap-2"
+                          variant="outline"
+                          onClick={() => setShowCamera(true)}
+                        >
+                          <Camera className="h-6 w-6" />
+                          <span>{t("common.scan")}</span>
+                        </Button>
+                        <ManualEntryDialog
+                          trigger={
+                            <Button className="h-20 text-base flex-col gap-2" variant="outline">
+                              <PenLine className="h-6 w-6" />
+                              <span>{t("common.manual")}</span>
+                            </Button>
+                          }
+                          onItemAdd={(formData) => addItem(formData)}
+                        />
+                      </div>
+                    ) : (
                       <ManualEntryDialog
                         trigger={
-                          <Button className="h-20 text-base flex-col gap-2" variant="outline">
+                          <Button className="h-20 w-full text-base flex-col gap-2" variant="outline">
                             <PenLine className="h-6 w-6" />
                             <span>{t("common.manual")}</span>
                           </Button>
                         }
                         onItemAdd={(formData) => addItem(formData)}
                       />
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
 
