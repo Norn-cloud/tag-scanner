@@ -100,25 +100,41 @@ export function TradeUI({
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              className="h-16 flex-col gap-1"
-              variant="outline"
-              onClick={onShowCamera}
-            >
-              <Camera className="h-5 w-5" />
-              <span className="text-sm">{t("common.scan")}</span>
-            </Button>
+          {activeSection === "IN" ? (
             <ManualEntryDialog
               trigger={
-                <Button className="h-16 flex-col gap-1" variant="outline">
+                <Button className="h-16 w-full flex-col gap-1" variant="outline">
                   <PenLine className="h-5 w-5" />
                   <span className="text-sm">{t("common.manual")}</span>
                 </Button>
               }
               onItemAdd={handleAddItem}
+              mode="buy"
+              title={t("trade.customerGives")}
             />
-          </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                className="h-16 flex-col gap-1"
+                variant="outline"
+                onClick={onShowCamera}
+              >
+                <Camera className="h-5 w-5" />
+                <span className="text-sm">{t("common.scan")}</span>
+              </Button>
+              <ManualEntryDialog
+                trigger={
+                  <Button className="h-16 flex-col gap-1" variant="outline">
+                    <PenLine className="h-5 w-5" />
+                    <span className="text-sm">{t("common.manual")}</span>
+                  </Button>
+                }
+                onItemAdd={handleAddItem}
+                mode="sell"
+                title={t("trade.customerReceives")}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

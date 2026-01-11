@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { type Origin, type Karat, type ItemCategory } from "@/lib/config";
 
-interface ItemFormData {
+export interface ItemFormData {
   origin: Origin;
   weightGrams: string;
   karat: Karat;
@@ -30,7 +30,7 @@ interface ItemFormData {
 const initialFormData: ItemFormData = {
   origin: "IT",
   weightGrams: "",
-  karat: 18,
+  karat: 21,
   cogsFromTag: "",
   sku: "",
   category: "JEWELRY",
@@ -39,14 +39,22 @@ const initialFormData: ItemFormData = {
   isPackagedBtc: false,
 };
 
+type FormMode = "sell" | "buy";
+
 interface ManualEntryFormProps {
   onSubmit: (data: ItemFormData) => void;
   onCancel: () => void;
+  mode?: FormMode;
 }
 
-export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
+export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEntryFormProps) {
   const t = useTranslations();
-  const [formData, setFormData] = useState<ItemFormData>(initialFormData);
+  const isBuyMode = mode === "buy";
+  
+  const [formData, setFormData] = useState<ItemFormData>(() => ({
+    ...initialFormData,
+    origin: isBuyMode ? "USED" : "IT",
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,162 +68,198 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const showCoinIngotOptions = formData.category === "COIN" || formData.category === "INGOT";
+  const showCoinIngotOptions = !isBuyMode && (formData.category === "COIN" || formData.category === "INGOT");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>{t("common.origin")}</Label>
-          <div className="grid grid-cols-2 gap-1">
-            {(["IT", "EG", "LX", "USED"] as Origin[]).map((origin) => (
-              <Button
-                key={origin}
-                type="button"
-                size="sm"
-                variant={formData.origin === origin ? "default" : "outline"}
-                onClick={() => updateField("origin", origin)}
-                className="text-xs"
-              >
-                {origin === "IT" && t("item.italian")}
-                {origin === "EG" && t("item.egyptian")}
-                {origin === "LX" && "LX"}
-                {origin === "USED" && t("item.used")}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("common.karat")}</Label>
-          <div className="grid grid-cols-3 gap-1">
-            {([18, 21, 24] as Karat[]).map((k) => (
-              <Button
-                key={k}
-                type="button"
-                size="sm"
-                variant={formData.karat === k ? "default" : "outline"}
-                onClick={() => updateField("karat", k)}
-              >
-                {k}K
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>{t("common.weight")} (g)</Label>
-          <Input
-            type="number"
-            step="0.001"
-            placeholder="4.380"
-            value={formData.weightGrams}
-            onChange={(e) => updateField("weightGrams", e.target.value)}
-            className="text-lg"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("common.cogs")}</Label>
-          <Input
-            type="number"
-            step="0.01"
-            placeholder={formData.origin === "IT" ? "50 USD" : "210 EGP"}
-            value={formData.cogsFromTag}
-            onChange={(e) => updateField("cogsFromTag", e.target.value)}
-            disabled={formData.origin === "USED"}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>{t("common.category")}</Label>
-        <div className="grid grid-cols-4 gap-1">
-          {(["JEWELRY", "COIN", "INGOT", "FIX"] as ItemCategory[]).map((cat) => (
-            <Button
-              key={cat}
-              type="button"
-              size="sm"
-              variant={formData.category === cat ? "default" : "outline"}
-              onClick={() => {
-                updateField("category", cat);
-                if (cat === "COIN") updateField("karat", 21);
-                if (cat === "INGOT") updateField("karat", 24);
-              }}
-              className="text-xs"
-            >
-              {cat === "JEWELRY" && t("item.jewelry")}
-              {cat === "COIN" && t("item.coin")}
-              {cat === "INGOT" && t("item.ingot")}
-              {cat === "FIX" && t("transaction.fix")}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {showCoinIngotOptions && (
-        <div className="space-y-3 rounded-lg border p-3">
-          <div className="flex items-center justify-between">
-            <Label>{t("common.source")}</Label>
-            <div className="flex gap-1">
-              <Button
-                type="button"
-                size="sm"
-                variant={formData.source === "BTC" ? "default" : "outline"}
-                onClick={() => updateField("source", "BTC")}
-              >
-                BTC
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={formData.source === "OTHER" ? "default" : "outline"}
-                onClick={() => updateField("source", "OTHER")}
-              >
-                {t("common.other")}
-              </Button>
+      {isBuyMode ? (
+        <>
+          <div className="space-y-2">
+            <Label>{t("common.karat")}</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {([18, 21, 24] as Karat[]).map((k) => (
+                <Button
+                  key={k}
+                  type="button"
+                  size="lg"
+                  variant={formData.karat === k ? "default" : "outline"}
+                  onClick={() => updateField("karat", k)}
+                  className="h-14 text-lg"
+                >
+                  {k}K
+                </Button>
+              ))}
             </div>
           </div>
 
-          {formData.source === "BTC" && (
-            <div className="flex items-center justify-between">
-              <Label>{t("item.packaged")}</Label>
-              <Switch
-                checked={formData.isPackagedBtc}
-                onCheckedChange={(checked) => updateField("isPackagedBtc", checked)}
+          <div className="space-y-2">
+            <Label>{t("common.weight")} (g)</Label>
+            <Input
+              type="number"
+              step="0.001"
+              placeholder="4.380"
+              value={formData.weightGrams}
+              onChange={(e) => updateField("weightGrams", e.target.value)}
+              className="text-2xl h-14 text-center"
+              autoFocus
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>{t("common.origin")}</Label>
+              <div className="grid grid-cols-2 gap-1">
+                {(["IT", "EG", "LX", "USED"] as Origin[]).map((origin) => (
+                  <Button
+                    key={origin}
+                    type="button"
+                    size="sm"
+                    variant={formData.origin === origin ? "default" : "outline"}
+                    onClick={() => updateField("origin", origin)}
+                    className="text-xs"
+                  >
+                    {origin === "IT" && t("item.italian")}
+                    {origin === "EG" && t("item.egyptian")}
+                    {origin === "LX" && "LX"}
+                    {origin === "USED" && t("item.used")}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t("common.karat")}</Label>
+              <div className="grid grid-cols-3 gap-1">
+                {([18, 21, 24] as Karat[]).map((k) => (
+                  <Button
+                    key={k}
+                    type="button"
+                    size="sm"
+                    variant={formData.karat === k ? "default" : "outline"}
+                    onClick={() => updateField("karat", k)}
+                  >
+                    {k}K
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>{t("common.weight")} (g)</Label>
+              <Input
+                type="number"
+                step="0.001"
+                placeholder="4.380"
+                value={formData.weightGrams}
+                onChange={(e) => updateField("weightGrams", e.target.value)}
+                className="text-lg"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>{t("common.cogs")}</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder={formData.origin === "IT" ? "50 USD" : "210 EGP"}
+                value={formData.cogsFromTag}
+                onChange={(e) => updateField("cogsFromTag", e.target.value)}
+                disabled={formData.origin === "USED"}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("common.category")}</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {(["JEWELRY", "COIN", "INGOT"] as ItemCategory[]).map((cat) => (
+                <Button
+                  key={cat}
+                  type="button"
+                  size="sm"
+                  variant={formData.category === cat ? "default" : "outline"}
+                  onClick={() => {
+                    updateField("category", cat);
+                    if (cat === "COIN") updateField("karat", 21);
+                    if (cat === "INGOT") updateField("karat", 24);
+                  }}
+                  className="text-xs"
+                >
+                  {cat === "JEWELRY" && t("item.jewelry")}
+                  {cat === "COIN" && t("item.coin")}
+                  {cat === "INGOT" && t("item.ingot")}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {showCoinIngotOptions && (
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between">
+                <Label>{t("common.source")}</Label>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={formData.source === "BTC" ? "default" : "outline"}
+                    onClick={() => updateField("source", "BTC")}
+                  >
+                    BTC
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={formData.source === "OTHER" ? "default" : "outline"}
+                    onClick={() => updateField("source", "OTHER")}
+                  >
+                    {t("common.other")}
+                  </Button>
+                </div>
+              </div>
+
+              {formData.source === "BTC" && (
+                <div className="flex items-center justify-between">
+                  <Label>{t("item.packaged")}</Label>
+                  <Switch
+                    checked={formData.isPackagedBtc}
+                    onCheckedChange={(checked) => updateField("isPackagedBtc", checked)}
+                  />
+                </div>
+              )}
+            </div>
           )}
-        </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <Label>{t("item.lightPiece")}</Label>
+              <p className="text-xs text-muted-foreground">{t("item.lightPieceDesc")}</p>
+            </div>
+            <Switch
+              checked={formData.isLightPiece}
+              onCheckedChange={(checked) => updateField("isLightPiece", checked)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("common.sku")}</Label>
+            <Input
+              placeholder="16000093"
+              value={formData.sku}
+              onChange={(e) => updateField("sku", e.target.value)}
+            />
+          </div>
+        </>
       )}
-
-      <div className="flex items-center justify-between rounded-lg border p-3">
-        <div>
-          <Label>{t("item.lightPiece")}</Label>
-          <p className="text-xs text-muted-foreground">{t("item.lightPieceDesc")}</p>
-        </div>
-        <Switch
-          checked={formData.isLightPiece}
-          onCheckedChange={(checked) => updateField("isLightPiece", checked)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>{t("common.sku")}</Label>
-        <Input
-          placeholder="16000093"
-          value={formData.sku}
-          onChange={(e) => updateField("sku", e.target.value)}
-        />
-      </div>
 
       <div className="flex gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
           {t("common.cancel")}
         </Button>
-        <Button type="submit" className="flex-1">
+        <Button type="submit" className="flex-1" disabled={!formData.weightGrams}>
           {t("common.add")}
         </Button>
       </div>
@@ -226,9 +270,11 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
 interface ManualEntryDialogProps {
   trigger: React.ReactNode;
   onItemAdd: (data: ItemFormData) => void;
+  mode?: FormMode;
+  title?: string;
 }
 
-export function ManualEntryDialog({ trigger, onItemAdd }: ManualEntryDialogProps) {
+export function ManualEntryDialog({ trigger, onItemAdd, mode = "sell", title }: ManualEntryDialogProps) {
   const [open, setOpen] = useState(false);
   const t = useTranslations();
 
@@ -240,14 +286,16 @@ export function ManualEntryDialog({ trigger, onItemAdd }: ManualEntryDialogProps
     [onItemAdd]
   );
 
+  const dialogTitle = title || (mode === "buy" ? t("buy.addItem") : t("common.manual"));
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("common.manual")}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
-        <ManualEntryForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
+        <ManualEntryForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} mode={mode} />
       </DialogContent>
     </Dialog>
   );

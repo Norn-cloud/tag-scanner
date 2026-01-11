@@ -298,6 +298,7 @@ export default function Home() {
                           </Button>
                         }
                         onItemAdd={(formData) => addItem(formData)}
+                        mode="buy"
                       />
                     )}
                   </CardContent>
