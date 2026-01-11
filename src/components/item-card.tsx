@@ -56,6 +56,9 @@ export function ItemCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{item.origin}</Badge>
+              <Badge variant={item.condition === "USED" ? "secondary" : "outline"}>
+                {item.condition === "USED" ? t("item.used") : t("item.new")}
+              </Badge>
               <Badge variant="outline">{item.karat}K</Badge>
               <Badge variant="outline">{item.weightGrams.toFixed(3)}g</Badge>
               {item.isLightPiece && (

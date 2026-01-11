@@ -10,7 +10,7 @@ import { ManualEntryDialog } from "@/components/manual-entry-form";
 import { ItemCard } from "@/components/item-card";
 import { Camera, PenLine, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Item, GoldPrices, Origin, Karat, ItemCategory, ItemSource } from "@/lib/config";
+import type { Item, GoldPrices, Origin, Condition, Karat, ItemCategory, ItemSource } from "@/lib/config";
 
 interface TradeUIProps {
   items: Item[];
@@ -25,6 +25,7 @@ interface TradeUIProps {
 
 interface ItemFormData {
   origin: Origin;
+  condition: Condition;
   weightGrams: string;
   karat: Karat;
   cogsFromTag: string;

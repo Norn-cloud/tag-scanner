@@ -37,26 +37,21 @@ export function calculateSellPrice(
   let cogs: number;
   let markup: number;
 
-  switch (item.origin) {
-    case "IT":
-      cogs = (item.cogsFromTag ?? GOLD_CONFIG.italianCogsUsd) * fxRate;
-      markup = item.isLightPiece
-        ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
-        : GOLD_CONFIG.standardMarkupEgp;
-      break;
+  const isUsed = item.condition === "USED";
 
-    case "EG":
-    case "LX":
-      cogs = item.cogsFromTag ?? GOLD_CONFIG.usedGold.avgCogsEgp;
-      markup = item.isLightPiece
-        ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
-        : GOLD_CONFIG.standardMarkupEgp;
-      break;
-
-    case "USED":
-      cogs = GOLD_CONFIG.usedGold.avgCogsEgp;
-      markup = GOLD_CONFIG.usedGold.avgMarkupEgp;
-      break;
+  if (isUsed) {
+    cogs = GOLD_CONFIG.usedGold.avgCogsEgp;
+    markup = GOLD_CONFIG.usedGold.avgMarkupEgp;
+  } else if (item.origin === "IT") {
+    cogs = (item.cogsFromTag ?? GOLD_CONFIG.italianCogsUsd) * fxRate;
+    markup = item.isLightPiece
+      ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
+      : GOLD_CONFIG.standardMarkupEgp;
+  } else {
+    cogs = item.cogsFromTag ?? GOLD_CONFIG.usedGold.avgCogsEgp;
+    markup = item.isLightPiece
+      ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
+      : GOLD_CONFIG.standardMarkupEgp;
   }
 
   const rawPrice = (goldPrice + cogs + markup) * item.weightGrams;

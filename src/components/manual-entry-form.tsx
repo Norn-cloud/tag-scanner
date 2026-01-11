@@ -13,12 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { type Origin, type Karat, type ItemCategory } from "@/lib/config";
+import { type Origin, type Condition, type Karat, type ItemCategory } from "@/lib/config";
 
 type CogsCurrency = "USD" | "EGP";
 
 export interface ItemFormData {
   origin: Origin;
+  condition: Condition;
   weightGrams: string;
   karat: Karat;
   cogsFromTag: string;
@@ -31,11 +32,12 @@ export interface ItemFormData {
 }
 
 const initialFormData: ItemFormData = {
-  origin: "IT",
+  origin: "EG",
+  condition: "NEW",
   weightGrams: "",
   karat: 21,
   cogsFromTag: "",
-  cogsCurrency: "USD",
+  cogsCurrency: "EGP",
   sku: "",
   category: "JEWELRY",
   isLightPiece: false,
@@ -57,8 +59,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
   
   const [formData, setFormData] = useState<ItemFormData>(() => ({
     ...initialFormData,
-    origin: isBuyMode ? "USED" : "IT",
-    cogsCurrency: "USD",
+    condition: isBuyMode ? "USED" : "NEW",
   }));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -74,6 +75,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
   };
 
   const showCoinIngotOptions = !isBuyMode && (formData.category === "COIN" || formData.category === "INGOT");
+  const isUsed = formData.condition === "USED";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,7 +118,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
             <div className="space-y-2">
               <Label>{t("common.origin")}</Label>
               <div className="grid grid-cols-2 gap-1">
-                {(["IT", "EG", "LX", "USED"] as Origin[]).map((origin) => (
+                {(["EG", "IT"] as Origin[]).map((origin) => (
                   <Button
                     key={origin}
                     type="button"
@@ -127,32 +129,45 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
                       if (origin === "IT") updateField("cogsCurrency", "USD");
                       else updateField("cogsCurrency", "EGP");
                     }}
-                    className="text-xs"
                   >
-                    {origin === "IT" && t("item.italian")}
-                    {origin === "EG" && t("item.egyptian")}
-                    {origin === "LX" && "LX"}
-                    {origin === "USED" && t("item.used")}
+                    {origin === "IT" ? t("item.italian") : t("item.egyptian")}
                   </Button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>{t("common.karat")}</Label>
-              <div className="grid grid-cols-3 gap-1">
-                {([18, 21, 24] as Karat[]).map((k) => (
+              <Label>{t("common.condition")}</Label>
+              <div className="grid grid-cols-2 gap-1">
+                {(["NEW", "USED"] as Condition[]).map((cond) => (
                   <Button
-                    key={k}
+                    key={cond}
                     type="button"
                     size="sm"
-                    variant={formData.karat === k ? "default" : "outline"}
-                    onClick={() => updateField("karat", k)}
+                    variant={formData.condition === cond ? "default" : "outline"}
+                    onClick={() => updateField("condition", cond)}
                   >
-                    {k}K
+                    {cond === "NEW" ? t("item.new") : t("item.used")}
                   </Button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("common.karat")}</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([18, 21, 24] as Karat[]).map((k) => (
+                <Button
+                  key={k}
+                  type="button"
+                  size="sm"
+                  variant={formData.karat === k ? "default" : "outline"}
+                  onClick={() => updateField("karat", k)}
+                >
+                  {k}K
+                </Button>
+              ))}
             </div>
           </div>
 
@@ -203,7 +218,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
                 placeholder={formData.cogsCurrency === "USD" ? "50" : "2500"}
                 value={formData.cogsFromTag}
                 onChange={(e) => updateField("cogsFromTag", e.target.value)}
-                disabled={formData.origin === "USED"}
+                disabled={isUsed}
               />
             </div>
           </div>

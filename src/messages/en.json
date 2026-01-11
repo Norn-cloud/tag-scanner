@@ -19,6 +19,7 @@
     "weight": "Weight",
     "karat": "Karat",
     "origin": "Origin",
+    "condition": "Condition",
     "sku": "SKU",
     "cogs": "COGS",
     "items": "Items",
@@ -73,6 +74,7 @@
   "item": {
     "italian": "Italian",
     "egyptian": "Egyptian",
+    "new": "New",
     "used": "Used",
     "jewelry": "Jewelry",
     "coin": "Coin",

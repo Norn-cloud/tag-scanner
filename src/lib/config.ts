@@ -35,7 +35,8 @@ export const GOLD_CONFIG = {
   },
 } as const;
 
-export type Origin = "IT" | "EG" | "LX" | "USED";
+export type Origin = "IT" | "EG";
+export type Condition = "NEW" | "USED";
 export type Karat = 18 | 21 | 24;
 export type TransactionType = "SELL" | "BUY" | "TRADE" | "FIX";
 export type ItemCategory = "JEWELRY" | "COIN" | "INGOT" | "FIX";
@@ -45,6 +46,7 @@ export type Direction = "IN" | "OUT";
 export interface Item {
   id: string;
   origin: Origin;
+  condition: Condition;
   weightGrams: number;
   karat: Karat;
   cogsFromTag?: number;

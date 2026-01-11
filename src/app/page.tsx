@@ -23,6 +23,7 @@ import {
   type TransactionType,
   type GoldPrices,
   type Origin,
+  type Condition,
   type Karat,
   type ItemCategory,
   type ItemSource,
@@ -73,6 +74,7 @@ export default function Home() {
 
   interface ItemFormData {
     origin: Origin;
+    condition: Condition;
     weightGrams: string;
     karat: Karat;
     cogsFromTag: string;
@@ -89,6 +91,7 @@ export default function Home() {
       const newItem: Item = {
         id: crypto.randomUUID(),
         origin: formData.origin,
+        condition: formData.condition,
         weightGrams: parseFloat(formData.weightGrams) || 0,
         karat: formData.karat,
         cogsFromTag: formData.cogsFromTag ? parseFloat(formData.cogsFromTag) : undefined,
