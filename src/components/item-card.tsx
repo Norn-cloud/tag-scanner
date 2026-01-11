@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 import { type Item, type GoldPrices } from "@/lib/config";
 import { getPriceWarningLevel, getCogsFloor } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -71,7 +72,13 @@ export function ItemCard({
           </div>
 
           <div className="text-right">
-            <p className="text-2xl font-bold tabular-nums">
+            <p className={cn(
+              "text-2xl font-bold tabular-nums",
+              warningLevel === "safe" && "text-emerald-600",
+              warningLevel === "warning" && "text-amber-600",
+              warningLevel === "danger" && "text-orange-600",
+              warningLevel === "loss" && "text-red-600"
+            )}>
               {currentPrice.toLocaleString("en-EG")}
             </p>
             <p className="text-xs text-muted-foreground">EGP</p>
@@ -115,11 +122,11 @@ export function ItemCard({
 
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={() => onRemove(item.id)}
-                  className="h-7 px-2 text-destructive hover:text-destructive"
+                  className="h-7 w-7 text-destructive hover:text-destructive"
                 >
-                  ✕
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>

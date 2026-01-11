@@ -27,7 +27,32 @@
     "category": "Category",
     "source": "Source",
     "other": "Other",
-    "egp": "EGP"
+    "egp": "EGP",
+    "grams": "g"
+  },
+  "trade": {
+    "customerGives": "Customer Gives",
+    "customerReceives": "Customer Receives",
+    "netDifference": "Net Difference",
+    "customerPays": "Customer pays this amount",
+    "customerReceivesBack": "Shop pays customer",
+    "evenTrade": "Even trade"
+  },
+  "fix": {
+    "selectType": "Select Fix Type",
+    "resize": "Resize",
+    "polish": "Polish",
+    "repair": "Repair",
+    "solder": "Solder",
+    "stoneReset": "Stone Reset",
+    "custom": "Custom",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the fix...",
+    "serviceFee": "Service Fee",
+    "feeRange": "{min} - {max} EGP",
+    "goldAdded": "Gold Added",
+    "goldCost": "Gold Cost",
+    "confirmFix": "Confirm Fix"
   },
   "transaction": {
     "sell": "Sell",

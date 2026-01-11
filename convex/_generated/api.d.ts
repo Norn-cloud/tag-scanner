@@ -8,13 +8,27 @@
  * @module
  */
 
+import type * as btcPrices from "../btcPrices.js";
+import type * as fxRate from "../fxRate.js";
+import type * as goldPrices from "../goldPrices.js";
+import type * as items from "../items.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as transactions from "../transactions.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  btcPrices: typeof btcPrices;
+  fxRate: typeof fxRate;
+  goldPrices: typeof goldPrices;
+  items: typeof items;
+  "lib/auth": typeof lib_auth;
+  transactions: typeof transactions;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

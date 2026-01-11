@@ -13,6 +13,8 @@ import { ItemCard } from "@/components/item-card";
 import { TransactionSummary } from "@/components/transaction-summary";
 import { GoldPriceInput } from "@/components/gold-price-input";
 import { CameraCapture } from "@/components/camera-capture";
+import { TradeUI } from "@/components/trade-ui";
+import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
 import { Coins, Sun, Moon, Camera, PenLine } from "lucide-react";
 import {
@@ -82,7 +84,8 @@ export default function Home() {
   }
 
   const addItem = useCallback(
-    (formData: ItemFormData) => {
+    (formData: ItemFormData, direction?: "IN" | "OUT") => {
+      const itemDirection = direction ?? (activeTab === "BUY" ? "IN" : "OUT");
       const newItem: Item = {
         id: crypto.randomUUID(),
         origin: formData.origin,
@@ -97,7 +100,7 @@ export default function Home() {
         calculatedPrice: 0,
         adjustedPrice: 0,
         isLocked: false,
-        direction: activeTab === "BUY" ? "IN" : "OUT",
+        direction: itemDirection,
       };
 
       const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
@@ -108,6 +111,12 @@ export default function Home() {
     },
     [activeTab, transactionBase]
   );
+
+  const [fixResult, setFixResult] = useState<FixData | null>(null);
+
+  const handleFixComplete = useCallback((data: FixData) => {
+    setFixResult(data);
+  }, []);
 
   const updateItemPrice = useCallback((id: string, price: number) => {
     setItems((prev) =>
@@ -152,6 +161,7 @@ export default function Home() {
 
   const clearTransaction = () => {
     setItems([]);
+    setFixResult(null);
   };
 
   if (showCamera) {
@@ -225,81 +235,135 @@ export default function Home() {
           </TabsList>
 
           <div className="mt-4 space-y-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span>{t("transaction.newTransaction")}</span>
-                  <div className="flex items-center gap-2">
-                    {!customerMode && items.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearTransaction}
-                        className="text-xs text-muted-foreground"
-                      >
+            {activeTab === "TRADE" ? (
+              <TradeUI
+                items={items}
+                goldPrices={goldPrices}
+                onAddItem={addItem}
+                onUpdatePrice={updateItemPrice}
+                onToggleLock={toggleItemLock}
+                onRemoveItem={removeItem}
+                onShowCamera={() => setShowCamera(true)}
+                customerMode={customerMode}
+              />
+            ) : activeTab === "FIX" ? (
+              fixResult ? (
+                <Card className="border-2 border-blue-500/50 bg-blue-500/5">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center justify-between">
+                      <span>{t("fix.confirmFix")}</span>
+                      <Button variant="ghost" size="sm" onClick={clearTransaction}>
                         {t("common.clear")}
                       </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t("fix.description")}</span>
+                      <span>{fixResult.description}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t("fix.serviceFee")}</span>
+                      <span>{fixResult.baseFee} {t("common.egp")}</span>
+                    </div>
+                    {fixResult.weightAddedGrams > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("fix.goldAdded")}</span>
+                        <span className="text-amber-600">
+                          {fixResult.weightAddedGrams}g @ {fixResult.karat}K
+                        </span>
+                      </div>
                     )}
-                    <Badge variant="secondary">{t(`transaction.${activeTab.toLowerCase()}`)}</Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    className="h-20 text-base flex-col gap-2"
-                    variant="outline"
-                    onClick={() => setShowCamera(true)}
-                  >
-                    <Camera className="h-6 w-6" />
-                    <span>{t("common.scan")}</span>
-                  </Button>
-                  <ManualEntryDialog
-                    trigger={
-                      <Button className="h-20 text-base flex-col gap-2" variant="outline">
-                        <PenLine className="h-6 w-6" />
-                        <span>{t("common.manual")}</span>
+                    <div className="flex justify-between pt-2 border-t">
+                      <span className="font-medium">{t("common.total")}</span>
+                      <span className="text-xl font-bold text-blue-600">
+                        {fixResult.totalPrice.toLocaleString()} {t("common.egp")}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <FixUI goldPrices={goldPrices} onComplete={handleFixComplete} />
+              )
+            ) : (
+              <>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center justify-between text-base">
+                      <span>{t("transaction.newTransaction")}</span>
+                      <div className="flex items-center gap-2">
+                        {!customerMode && items.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearTransaction}
+                            className="text-xs text-muted-foreground"
+                          >
+                            {t("common.clear")}
+                          </Button>
+                        )}
+                        <Badge variant="secondary">{t(`transaction.${activeTab.toLowerCase()}`)}</Badge>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        className="h-20 text-base flex-col gap-2"
+                        variant="outline"
+                        onClick={() => setShowCamera(true)}
+                      >
+                        <Camera className="h-6 w-6" />
+                        <span>{t("common.scan")}</span>
                       </Button>
-                    }
-                    onItemAdd={addItem}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                      <ManualEntryDialog
+                        trigger={
+                          <Button className="h-20 text-base flex-col gap-2" variant="outline">
+                            <PenLine className="h-6 w-6" />
+                            <span>{t("common.manual")}</span>
+                          </Button>
+                        }
+                        onItemAdd={(formData) => addItem(formData)}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {items.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">
-                    {t("common.items")} ({items.length})
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{t("common.customerView")}</span>
-                    <Switch
-                      checked={customerMode}
-                      onCheckedChange={setCustomerMode}
-                    />
+                {items.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">
+                        {t("common.items")} ({items.length})
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">{t("common.customerView")}</span>
+                        <Switch
+                          checked={customerMode}
+                          onCheckedChange={setCustomerMode}
+                        />
+                      </div>
+                    </div>
+
+                    {items.map((item) => (
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        goldPrices={goldPrices}
+                        onPriceChange={updateItemPrice}
+                        onLockToggle={toggleItemLock}
+                        onRemove={removeItem}
+                        showSlider={!customerMode}
+                      />
+                    ))}
                   </div>
-                </div>
-
-                {items.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    goldPrices={goldPrices}
-                    onPriceChange={updateItemPrice}
-                    onLockToggle={toggleItemLock}
-                    onRemove={removeItem}
-                    showSlider={!customerMode}
-                  />
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </Tabs>
       </div>
 
-      {items.length > 0 && (
+      {items.length > 0 && activeTab !== "FIX" && activeTab !== "TRADE" && (
         <div className="fixed bottom-0 left-0 right-0 z-50">
           <TransactionSummary
             transaction={transaction}

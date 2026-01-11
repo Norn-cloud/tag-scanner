@@ -27,7 +27,32 @@
     "category": "الفئة",
     "source": "المصدر",
     "other": "أخرى",
-    "egp": "ج.م"
+    "egp": "ج.م",
+    "grams": "جم"
+  },
+  "trade": {
+    "customerGives": "يعطي العميل",
+    "customerReceives": "يستلم العميل",
+    "netDifference": "الفرق الصافي",
+    "customerPays": "يدفع العميل هذا المبلغ",
+    "customerReceivesBack": "المحل يدفع للعميل",
+    "evenTrade": "استبدال متساوي"
+  },
+  "fix": {
+    "selectType": "اختر نوع الإصلاح",
+    "resize": "تعديل المقاس",
+    "polish": "تلميع",
+    "repair": "إصلاح",
+    "solder": "لحام",
+    "stoneReset": "تركيب فص",
+    "custom": "مخصص",
+    "description": "الوصف",
+    "descriptionPlaceholder": "صف الإصلاح...",
+    "serviceFee": "أجرة الإصلاح",
+    "feeRange": "{min} - {max} ج.م",
+    "goldAdded": "ذهب مضاف",
+    "goldCost": "تكلفة الذهب",
+    "confirmFix": "تأكيد الإصلاح"
   },
   "transaction": {
     "sell": "بيع",
