@@ -123,7 +123,7 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
         </div>
       )}
 
-      <div className="safe-area-bottom bg-black/80 p-4">
+      <div className="pb-[env(safe-area-inset-bottom)] bg-black/80 p-4">
         {captured ? (
           <div className="flex gap-3">
             <Button
