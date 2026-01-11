@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { type Origin, type Karat, type ItemCategory } from "@/lib/config";
 
+type CogsCurrency = "USD" | "EGP";
+
 export interface ItemFormData {
   origin: Origin;
   weightGrams: string;
   karat: Karat;
   cogsFromTag: string;
+  cogsCurrency: CogsCurrency;
   sku: string;
   category: ItemCategory;
   isLightPiece: boolean;
@@ -32,6 +35,7 @@ const initialFormData: ItemFormData = {
   weightGrams: "",
   karat: 21,
   cogsFromTag: "",
+  cogsCurrency: "USD",
   sku: "",
   category: "JEWELRY",
   isLightPiece: false,
@@ -54,6 +58,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
   const [formData, setFormData] = useState<ItemFormData>(() => ({
     ...initialFormData,
     origin: isBuyMode ? "USED" : "IT",
+    cogsCurrency: "USD",
   }));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -117,7 +122,11 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
                     type="button"
                     size="sm"
                     variant={formData.origin === origin ? "default" : "outline"}
-                    onClick={() => updateField("origin", origin)}
+                    onClick={() => {
+                      updateField("origin", origin);
+                      if (origin === "IT") updateField("cogsCurrency", "USD");
+                      else updateField("cogsCurrency", "EGP");
+                    }}
                     className="text-xs"
                   >
                     {origin === "IT" && t("item.italian")}
@@ -161,11 +170,37 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
             </div>
 
             <div className="space-y-2">
-              <Label>{t("common.cogs")}</Label>
+              <div className="flex items-center justify-between">
+                <Label>{t("common.cogs")}</Label>
+                <div className="flex rounded-md border overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => updateField("cogsCurrency", "USD")}
+                    className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                      formData.cogsCurrency === "USD"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    USD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField("cogsCurrency", "EGP")}
+                    className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                      formData.cogsCurrency === "EGP"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    EGP
+                  </button>
+                </div>
+              </div>
               <Input
                 type="number"
                 step="0.01"
-                placeholder={formData.origin === "IT" ? "50 USD" : "210 EGP"}
+                placeholder={formData.cogsCurrency === "USD" ? "50" : "2500"}
                 value={formData.cogsFromTag}
                 onChange={(e) => updateField("cogsFromTag", e.target.value)}
                 disabled={formData.origin === "USED"}

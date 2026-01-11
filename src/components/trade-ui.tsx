@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ManualEntryDialog } from "@/components/manual-entry-form";
 import { ItemCard } from "@/components/item-card";
-import { Camera, PenLine, ArrowDown, ArrowUp, ArrowRightLeft } from "lucide-react";
+import { Camera, PenLine, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Item, GoldPrices, Origin, Karat, ItemCategory, ItemSource } from "@/lib/config";
 
@@ -62,41 +62,49 @@ export function TradeUI({
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ArrowRightLeft className="h-5 w-5" />
-            {t("transaction.trade")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-4 space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <Button
-              variant={activeSection === "IN" ? "default" : "outline"}
+              variant="outline"
               className={cn(
-                "h-12 flex-col gap-1",
-                activeSection === "IN" && "bg-amber-600 hover:bg-amber-700"
+                "h-14 flex-col gap-1 relative",
+                activeSection === "IN" && "ring-2 ring-orange-400 border-orange-400"
               )}
               onClick={() => setActiveSection("IN")}
             >
-              <div className="flex items-center gap-1">
-                <ArrowDown className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <ArrowDownCircle className={cn(
+                  "h-5 w-5",
+                  activeSection === "IN" ? "text-orange-500" : "text-muted-foreground"
+                )} />
                 <span className="text-sm font-medium">{t("trade.customerGives")}</span>
               </div>
-              <span className="text-xs opacity-80">{itemsIn.length} {t("common.items")}</span>
+              {itemsIn.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {itemsIn.length} {t("common.items")}
+                </Badge>
+              )}
             </Button>
             <Button
-              variant={activeSection === "OUT" ? "default" : "outline"}
+              variant="outline"
               className={cn(
-                "h-12 flex-col gap-1",
-                activeSection === "OUT" && "bg-emerald-600 hover:bg-emerald-700"
+                "h-14 flex-col gap-1 relative",
+                activeSection === "OUT" && "ring-2 ring-sky-400 border-sky-400"
               )}
               onClick={() => setActiveSection("OUT")}
             >
-              <div className="flex items-center gap-1">
-                <ArrowUp className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <ArrowUpCircle className={cn(
+                  "h-5 w-5",
+                  activeSection === "OUT" ? "text-sky-500" : "text-muted-foreground"
+                )} />
                 <span className="text-sm font-medium">{t("trade.customerReceives")}</span>
               </div>
-              <span className="text-xs opacity-80">{itemsOut.length} {t("common.items")}</span>
+              {itemsOut.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {itemsOut.length} {t("common.items")}
+                </Badge>
+              )}
             </Button>
           </div>
 
@@ -139,16 +147,16 @@ export function TradeUI({
       </Card>
 
       {activeSection === "IN" && itemsIn.length > 0 && (
-        <Card className="border-amber-500/30">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ArrowDown className="h-4 w-4 text-amber-500" />
+                <ArrowDownCircle className="h-4 w-4 text-orange-500" />
                 {t("trade.customerGives")}
               </div>
-              <Badge variant="outline" className="text-amber-600 border-amber-500/50">
+              <span className="text-orange-600 font-semibold">
                 {totalIn.toLocaleString()} {t("common.egp")}
-              </Badge>
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -168,16 +176,16 @@ export function TradeUI({
       )}
 
       {activeSection === "OUT" && itemsOut.length > 0 && (
-        <Card className="border-emerald-500/30">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ArrowUp className="h-4 w-4 text-emerald-500" />
+                <ArrowUpCircle className="h-4 w-4 text-sky-500" />
                 {t("trade.customerReceives")}
               </div>
-              <Badge variant="outline" className="text-emerald-600 border-emerald-500/50">
+              <span className="text-sky-600 font-semibold">
                 {totalOut.toLocaleString()} {t("common.egp")}
-              </Badge>
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -197,23 +205,30 @@ export function TradeUI({
       )}
 
       {items.length > 0 && (
-        <Card className={cn(
-          "border-2",
-          netDifference > 0 ? "border-emerald-500/50 bg-emerald-500/5" : 
-          netDifference < 0 ? "border-red-500/50 bg-red-500/5" : 
-          "border-muted"
-        )}>
+        <Card className="overflow-hidden">
+          <div className={cn(
+            "h-1",
+            netDifference > 0 ? "bg-green-500" : 
+            netDifference < 0 ? "bg-red-500" : 
+            "bg-muted"
+          )} />
           <CardContent className="py-4">
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("trade.customerGives")}</span>
-                <span className="text-amber-600 font-medium">
+                <div className="flex items-center gap-2">
+                  <ArrowDownCircle className="h-4 w-4 text-orange-500" />
+                  <span className="text-muted-foreground">{t("trade.customerGives")}</span>
+                </div>
+                <span className="font-medium">
                   {totalIn.toLocaleString()} {t("common.egp")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("trade.customerReceives")}</span>
-                <span className="text-emerald-600 font-medium">
+                <div className="flex items-center gap-2">
+                  <ArrowUpCircle className="h-4 w-4 text-sky-500" />
+                  <span className="text-muted-foreground">{t("trade.customerReceives")}</span>
+                </div>
+                <span className="font-medium">
                   {totalOut.toLocaleString()} {t("common.egp")}
                 </span>
               </div>
@@ -222,16 +237,21 @@ export function TradeUI({
                 <span className="font-medium">{t("trade.netDifference")}</span>
                 <div className="text-right">
                   <span className={cn(
-                    "text-xl font-bold",
-                    netDifference > 0 ? "text-emerald-600" : 
+                    "text-2xl font-bold",
+                    netDifference > 0 ? "text-green-600" : 
                     netDifference < 0 ? "text-red-600" : 
                     "text-foreground"
                   )}>
-                    {netDifference > 0 ? "+" : ""}{netDifference.toLocaleString()} {t("common.egp")}
+                    {Math.abs(netDifference).toLocaleString()} {t("common.egp")}
                   </span>
-                  <p className="text-xs text-muted-foreground">
+                  <p className={cn(
+                    "text-sm font-medium",
+                    netDifference > 0 ? "text-green-600" : 
+                    netDifference < 0 ? "text-red-600" : 
+                    "text-muted-foreground"
+                  )}>
                     {netDifference > 0 
-                      ? t("trade.customerPays") 
+                      ? t("trade.customerPays")
                       : netDifference < 0 
                         ? t("trade.customerReceivesBack")
                         : t("trade.evenTrade")
