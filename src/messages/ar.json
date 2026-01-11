@@ -69,7 +69,8 @@
     "customerReceives": "يستلم العميل"
   },
   "buy": {
-    "addItem": "إضافة ذهب العميل"
+    "addItem": "إضافة ذهب العميل",
+    "youPay": "تدفع للعميل"
   },
   "item": {
     "italian": "إيطالي",

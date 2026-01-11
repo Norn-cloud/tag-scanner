@@ -69,7 +69,8 @@
     "customerReceives": "Customer Receives"
   },
   "buy": {
-    "addItem": "Add Customer Gold"
+    "addItem": "Add Customer Gold",
+    "youPay": "You Pay Customer"
   },
   "item": {
     "italian": "Italian",

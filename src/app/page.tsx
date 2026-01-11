@@ -14,6 +14,7 @@ import { TransactionSummary } from "@/components/transaction-summary";
 import { GoldPriceInput } from "@/components/gold-price-input";
 import { CameraCapture } from "@/components/camera-capture";
 import { TradeUI } from "@/components/trade-ui";
+import { BuyUI } from "@/components/buy-ui";
 // import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
 import { Coins, Sun, Moon, Camera, PenLine } from "lucide-react";
@@ -113,6 +114,31 @@ export default function Home() {
       setItems((prev) => [...prev, newItem]);
     },
     [activeTab, transactionBase]
+  );
+
+  const addBuyItem = useCallback(
+    (data: { karat: Karat; weightGrams: string }) => {
+      const newItem: Item = {
+        id: crypto.randomUUID(),
+        origin: "EG",
+        condition: "USED",
+        weightGrams: parseFloat(data.weightGrams) || 0,
+        karat: data.karat,
+        category: "JEWELRY",
+        isLightPiece: false,
+        calculatedPrice: 0,
+        adjustedPrice: 0,
+        isLocked: false,
+        direction: "IN",
+      };
+
+      const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
+      newItem.calculatedPrice = price;
+      newItem.adjustedPrice = price;
+
+      setItems((prev) => [...prev, newItem]);
+    },
+    [transactionBase]
   );
 
   // FIX feature disabled for now
@@ -250,6 +276,17 @@ export default function Home() {
                 onShowCamera={() => setShowCamera(true)}
                 customerMode={customerMode}
               />
+            ) : activeTab === "BUY" ? (
+              <BuyUI
+                items={items}
+                goldPrices={goldPrices}
+                onAddItem={addBuyItem}
+                onUpdatePrice={updateItemPrice}
+                onToggleLock={toggleItemLock}
+                onRemoveItem={removeItem}
+                onClear={clearTransaction}
+                customerMode={customerMode}
+              />
             ) : (
               <>
                 <Card>
@@ -272,38 +309,25 @@ export default function Home() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {activeTab === "SELL" ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button
-                          className="h-20 text-base flex-col gap-2"
-                          variant="outline"
-                          onClick={() => setShowCamera(true)}
-                        >
-                          <Camera className="h-6 w-6" />
-                          <span>{t("common.scan")}</span>
-                        </Button>
-                        <ManualEntryDialog
-                          trigger={
-                            <Button className="h-20 text-base flex-col gap-2" variant="outline">
-                              <PenLine className="h-6 w-6" />
-                              <span>{t("common.manual")}</span>
-                            </Button>
-                          }
-                          onItemAdd={(formData) => addItem(formData)}
-                        />
-                      </div>
-                    ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        className="h-20 text-base flex-col gap-2"
+                        variant="outline"
+                        onClick={() => setShowCamera(true)}
+                      >
+                        <Camera className="h-6 w-6" />
+                        <span>{t("common.scan")}</span>
+                      </Button>
                       <ManualEntryDialog
                         trigger={
-                          <Button className="h-20 w-full text-base flex-col gap-2" variant="outline">
+                          <Button className="h-20 text-base flex-col gap-2" variant="outline">
                             <PenLine className="h-6 w-6" />
                             <span>{t("common.manual")}</span>
                           </Button>
                         }
                         onItemAdd={(formData) => addItem(formData)}
-                        mode="buy"
                       />
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
 
