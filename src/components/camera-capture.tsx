@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, X, RotateCcw, Check } from "lucide-react";
+import { Camera, X, RotateCcw, Check, Loader2 } from "lucide-react";
 
 interface CameraCaptureProps {
   onCapture: (imageData: string) => void;
@@ -123,11 +123,14 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
         </div>
       )}
 
-      <div className="pb-[env(safe-area-inset-bottom)] bg-black/80 p-4">
+      <div 
+        className="flex-shrink-0 bg-black/80 p-4"
+        style={{ paddingBottom: `calc(1rem + env(safe-area-inset-bottom, 0px))` }}
+      >
         {captured ? (
           <div className="flex gap-3">
             <Button
-              variant="outline"
+              variant="secondary"
               className="flex-1 h-14 text-lg gap-2"
               onClick={retake}
             >
@@ -135,7 +138,7 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
               {t("scan.retry")}
             </Button>
             <Button
-              className="flex-1 h-14 text-lg gap-2"
+              className="flex-1 h-14 text-lg gap-2 bg-white text-black hover:bg-white/90"
               onClick={confirmCapture}
             >
               <Check className="h-5 w-5" />
@@ -145,7 +148,7 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
         ) : (
           <div className="flex gap-3">
             <Button
-              variant="outline"
+              variant="secondary"
               className="h-14 px-6"
               onClick={() => {
                 stopCamera();
@@ -155,11 +158,15 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
               <X className="h-5 w-5" />
             </Button>
             <Button
-              className="flex-1 h-14 text-lg gap-2"
+              className="flex-1 h-14 text-lg gap-2 bg-white text-black hover:bg-white/90"
               onClick={captureImage}
               disabled={!isStreaming}
             >
-              <Camera className="h-5 w-5" />
+              {!isStreaming ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Camera className="h-5 w-5" />
+              )}
               {t("scan.captureTag")}
             </Button>
           </div>
