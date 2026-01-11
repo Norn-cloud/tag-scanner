@@ -98,11 +98,11 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black">
       <canvas ref={canvasRef} className="hidden" />
 
       {captured ? (
-        <div className="flex-1 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bottom-24 flex items-center justify-center p-4">
           <img
             src={captured}
             alt="Captured"
@@ -110,7 +110,7 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
           />
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="absolute inset-0 bottom-24 flex items-center justify-center">
           <video
             ref={videoRef}
             autoPlay
@@ -124,7 +124,7 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
       )}
 
       <div 
-        className="flex-shrink-0 bg-black/80 p-4"
+        className="absolute bottom-0 left-0 right-0 bg-black/90 p-4 border-t border-white/10"
         style={{ paddingBottom: `calc(1rem + env(safe-area-inset-bottom, 0px))` }}
       >
         {captured ? (
