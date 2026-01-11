@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +21,16 @@ export function TransactionSummary({
   customerMode = false,
 }: TransactionSummaryProps) {
   const t = useTranslations();
+  const [sliderValue, setSliderValue] = useState(100);
   const { type, totalIn, totalOut, netAmount, totalMargin, marginPercent } = transaction;
 
   const isProfit = totalMargin > 0;
   const isTrade = type === "TRADE";
+
+  const handleSliderChange = (value: number[]) => {
+    setSliderValue(value[0]);
+    onMasterSliderChange(value[0] / 100);
+  };
 
   return (
     <Card className="sticky bottom-0 border-t-2 shadow-lg">
@@ -32,19 +39,19 @@ export function TransactionSummary({
           <>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Master Price Adjustment</span>
-                <span className="font-medium">100%</span>
+                <span className="text-muted-foreground">{t("prices.priceAdjustment")}</span>
+                <span className="font-medium">{sliderValue}%</span>
               </div>
               <Slider
-                defaultValue={[100]}
+                value={[sliderValue]}
                 min={80}
                 max={120}
                 step={1}
-                onValueChange={([value]) => onMasterSliderChange(value / 100)}
+                onValueChange={handleSliderChange}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>-20%</span>
-                <span>Recommended</span>
+                <span>{t("prices.recommended")}</span>
                 <span>+20%</span>
               </div>
             </div>

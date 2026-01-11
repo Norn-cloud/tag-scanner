@@ -3,7 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode } from "react";
 
 const convex = new ConvexReactClient(
   process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud"
@@ -16,16 +16,6 @@ interface ProvidersProps {
 }
 
 export function Providers({ children, locale, messages }: ProvidersProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <ConvexProvider client={convex}>
       <NextIntlClientProvider locale={locale} messages={messages}>

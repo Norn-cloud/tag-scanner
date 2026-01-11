@@ -20,7 +20,14 @@
     "karat": "العيار",
     "origin": "المنشأ",
     "sku": "الكود",
-    "cogs": "التكلفة"
+    "cogs": "التكلفة",
+    "items": "القطع",
+    "clear": "مسح",
+    "customerView": "عرض العميل",
+    "category": "الفئة",
+    "source": "المصدر",
+    "other": "أخرى",
+    "egp": "ج.م"
   },
   "transaction": {
     "sell": "بيع",
@@ -43,6 +50,7 @@
     "coin": "عملة",
     "ingot": "سبيكة",
     "lightPiece": "قطعة خفيفة",
+    "lightPieceDesc": "مصنعية أعلى للوزن الخفيف",
     "packaged": "معلب",
     "locked": "مقفل",
     "unlock": "فتح القفل",
@@ -57,7 +65,9 @@
     "hoursAgo": "ساعات مضت",
     "staleWarning": "بيانات السعر قديمة. يُنصح بالتحديث.",
     "deduction": "الخصم",
-    "markup": "المصنعية"
+    "markup": "المصنعية",
+    "priceAdjustment": "تعديل السعر",
+    "recommended": "الموصى به"
   },
   "warnings": {
     "belowRecommended": "أقل من السعر الموصى به",

@@ -3,11 +3,9 @@
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { GOLD_CONFIG, type Origin, type Karat, type ItemCategory } from "@/lib/config";
+import { type Origin, type Karat, type ItemCategory } from "@/lib/config";
 
 interface ItemFormData {
   origin: Origin;
@@ -133,7 +131,7 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label>Category</Label>
+        <Label>{t("common.category")}</Label>
         <div className="grid grid-cols-4 gap-1">
           {(["JEWELRY", "COIN", "INGOT", "FIX"] as ItemCategory[]).map((cat) => (
             <Button
@@ -160,7 +158,7 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
       {showCoinIngotOptions && (
         <div className="space-y-3 rounded-lg border p-3">
           <div className="flex items-center justify-between">
-            <Label>Source</Label>
+            <Label>{t("common.source")}</Label>
             <div className="flex gap-1">
               <Button
                 type="button"
@@ -176,7 +174,7 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
                 variant={formData.source === "OTHER" ? "default" : "outline"}
                 onClick={() => updateField("source", "OTHER")}
               >
-                Other
+                {t("common.other")}
               </Button>
             </div>
           </div>
@@ -196,7 +194,7 @@ export function ManualEntryForm({ onSubmit, onCancel }: ManualEntryFormProps) {
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div>
           <Label>{t("item.lightPiece")}</Label>
-          <p className="text-xs text-muted-foreground">Higher markup for low weight</p>
+          <p className="text-xs text-muted-foreground">{t("item.lightPieceDesc")}</p>
         </div>
         <Switch
           checked={formData.isLightPiece}

@@ -20,7 +20,14 @@
     "karat": "Karat",
     "origin": "Origin",
     "sku": "SKU",
-    "cogs": "COGS"
+    "cogs": "COGS",
+    "items": "Items",
+    "clear": "Clear",
+    "customerView": "Customer View",
+    "category": "Category",
+    "source": "Source",
+    "other": "Other",
+    "egp": "EGP"
   },
   "transaction": {
     "sell": "Sell",
@@ -43,6 +50,7 @@
     "coin": "Coin",
     "ingot": "Ingot",
     "lightPiece": "Light Piece",
+    "lightPieceDesc": "Higher markup for low weight",
     "packaged": "Packaged",
     "locked": "Locked",
     "unlock": "Unlock",
@@ -57,7 +65,9 @@
     "hoursAgo": "hours ago",
     "staleWarning": "Price data is stale. Consider refreshing.",
     "deduction": "Deduction",
-    "markup": "Markup"
+    "markup": "Markup",
+    "priceAdjustment": "Price Adjustment",
+    "recommended": "Recommended"
   },
   "warnings": {
     "belowRecommended": "Below recommended price",
