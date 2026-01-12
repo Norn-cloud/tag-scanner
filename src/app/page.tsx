@@ -3,6 +3,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "next-themes";
+import { useAction } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +19,7 @@ import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
 // import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
-import { Settings, Sun, Moon, Camera, PenLine } from "lucide-react";
+import { Settings, Sun, Moon, Camera, PenLine, Loader2 } from "lucide-react";
 import {
   type Item,
   type Transaction,
@@ -50,6 +52,9 @@ export default function Home() {
   const [customerMode, setCustomerMode] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+
+  const scanTag = useAction(api.ocr.scanTag);
 
   const transactionBase = useMemo(() => ({
     id: "draft" as const,
@@ -177,10 +182,45 @@ export default function Home() {
     );
   }, []);
 
-  const handleCapture = useCallback((imageData: string) => {
+  const handleCapture = useCallback(async (imageData: string) => {
     setShowCamera(false);
-    console.log("Captured image, would send to OCR:", imageData.slice(0, 100));
-  }, []);
+    setIsScanning(true);
+    
+    try {
+      const result = await scanTag({ imageBase64: imageData });
+      
+      if (result.parsed.weight) {
+        const newItem: Item = {
+          id: crypto.randomUUID(),
+          origin: "EG",
+          condition: "NEW",
+          weightGrams: result.parsed.weight,
+          karat: (result.parsed.karat as 18 | 21 | 24) || 21,
+          cogsFromTag: result.parsed.cogs,
+          sku: result.parsed.sku,
+          category: "JEWELRY",
+          isLightPiece: false,
+          calculatedPrice: 0,
+          adjustedPrice: 0,
+          isLocked: false,
+          direction: "OUT",
+        };
+
+        const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
+        newItem.calculatedPrice = price;
+        newItem.adjustedPrice = price;
+
+        setItems((prev) => [...prev, newItem]);
+      } else {
+        alert("Could not read tag. Please try again or enter manually.");
+      }
+    } catch (error) {
+      console.error("OCR error:", error);
+      alert("Scan failed. Please try again or enter manually.");
+    } finally {
+      setIsScanning(false);
+    }
+  }, [scanTag, transactionBase]);
 
   const toggleLocale = async () => {
     const newLocale = locale === "ar" ? "en" : "ar";

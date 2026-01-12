@@ -13,6 +13,7 @@ import type * as fxRate from "../fxRate.js";
 import type * as goldPrices from "../goldPrices.js";
 import type * as items from "../items.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as ocr from "../ocr.js";
 import type * as transactions from "../transactions.js";
 
 import type {
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   goldPrices: typeof goldPrices;
   items: typeof items;
   "lib/auth": typeof lib_auth;
+  ocr: typeof ocr;
   transactions: typeof transactions;
 }>;
 
