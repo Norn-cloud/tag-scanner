@@ -17,7 +17,7 @@ import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
 // import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
-import { Coins, Sun, Moon, Camera, PenLine } from "lucide-react";
+import { Settings, Sun, Moon, Camera, PenLine } from "lucide-react";
 import {
   type Item,
   type Transaction,
@@ -208,7 +208,7 @@ export default function Home() {
           <h1 className="text-lg font-bold">{t("common.appName")}</h1>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" onClick={() => setShowPrices(!showPrices)}>
-              <Coins className="h-4 w-4" />
+              <Settings className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={toggleLocale}>
               {locale === "ar" ? "EN" : "ع"}

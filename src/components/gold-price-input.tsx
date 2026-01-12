@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RefreshCw } from "lucide-react";
 
 interface GoldPriceInputProps {
   prices: {
@@ -40,8 +41,9 @@ export function GoldPriceInput({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-base">
           {t("prices.goldPrice")}
-          <Button variant="ghost" size="sm" onClick={onRefresh}>
-            🔄 {t("prices.refreshPrice")}
+          <Button variant="ghost" size="sm" onClick={onRefresh} className="gap-1">
+            <RefreshCw className="h-4 w-4" />
+            {t("prices.refreshPrice")}
           </Button>
         </CardTitle>
         {lastUpdated && (

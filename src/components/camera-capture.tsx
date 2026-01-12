@@ -110,12 +110,12 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
           />
         </div>
       ) : (
-        <div className="absolute inset-0 bottom-24 flex items-center justify-center">
+        <div className="absolute inset-0 bottom-24">
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            className="max-w-full max-h-full object-contain"
+            className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div className="w-64 h-40 border-2 border-white/50 rounded-lg" />
