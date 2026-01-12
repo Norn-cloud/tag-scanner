@@ -64,9 +64,21 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+
+    const cropWidth = videoWidth * 0.7;
+    const cropHeight = cropWidth * 0.625;
+    const cropX = (videoWidth - cropWidth) / 2;
+    const cropY = (videoHeight - cropHeight) / 2;
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    ctx.drawImage(
+      video,
+      cropX, cropY, cropWidth, cropHeight,
+      0, 0, cropWidth, cropHeight
+    );
 
     const imageData = canvas.toDataURL("image/jpeg", 0.9);
     setCaptured(imageData);
