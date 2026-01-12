@@ -2,7 +2,9 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { ReactNode } from "react";
 
 const convex = new ConvexReactClient(
@@ -13,11 +15,16 @@ interface ProvidersProps {
   children: ReactNode;
   locale: string;
   messages: Record<string, unknown>;
+  initialToken?: string | null;
 }
 
-export function Providers({ children, locale, messages }: ProvidersProps) {
+export function Providers({ children, locale, messages, initialToken }: ProvidersProps) {
   return (
-    <ConvexProvider client={convex}>
+    <ConvexBetterAuthProvider
+      client={convex}
+      authClient={authClient}
+      initialToken={initialToken}
+    >
       <NextIntlClientProvider locale={locale} messages={messages}>
         <NextThemesProvider
           attribute="class"
@@ -28,6 +35,6 @@ export function Providers({ children, locale, messages }: ProvidersProps) {
           {children}
         </NextThemesProvider>
       </NextIntlClientProvider>
-    </ConvexProvider>
+    </ConvexBetterAuthProvider>
   );
 }

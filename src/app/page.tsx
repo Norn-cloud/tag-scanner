@@ -3,8 +3,10 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "next-themes";
-import { useAction } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
+import { LoginForm } from "@/components/login-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +21,7 @@ import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
 // import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
-import { Settings, Sun, Moon, Camera, PenLine, Loader2 } from "lucide-react";
+import { Settings, Sun, Moon, Camera, PenLine, Loader2, LogOut } from "lucide-react";
 import {
   type Item,
   type Transaction,
@@ -43,6 +45,9 @@ export default function Home() {
   const t = useTranslations();
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
+
+  const { data: session, isPending: sessionLoading } = authClient.useSession();
+  const currentUser = useQuery(api.auth.getCurrentUser);
 
   const [activeTab, setActiveTab] = useState<TransactionType>("SELL");
   const [items, setItems] = useState<Item[]>([]);
@@ -232,6 +237,22 @@ export default function Home() {
     setItems([]);
   };
 
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
+
+  if (sessionLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LoginForm />;
+  }
+
   if (showCamera) {
     return (
       <CameraCapture
@@ -259,6 +280,9 @@ export default function Home() {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
