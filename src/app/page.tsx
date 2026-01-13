@@ -66,6 +66,7 @@ export default function Home() {
   } | null>(null);
 
   const scanTag = useAction(api.ocr.scanTag);
+  const fetchPrices = useAction(api.pricesFetch.fetchPrices);
 
   const ctx: TransactionContext = useMemo(() => ({
     type: activeTab,
@@ -167,6 +168,7 @@ export default function Home() {
       weightGrams: data.weightGrams,
       karat: data.karat,
       cogsFromTag: data.cogsFromTag,
+      cogsCurrency: data.cogsCurrency,
       sku: data.sku,
       category: data.category,
       isLightPiece: data.isLightPiece,
@@ -250,8 +252,13 @@ export default function Home() {
               setGoldPrices((prev) => ({ ...prev, [`k${k}`]: p }))
             }
             onFxChange={setFxRate}
-            onRefresh={() => {
-              setLastPriceUpdate(new Date());
+            onRefresh={async () => {
+              const result = await fetchPrices({});
+              if (result.success && result.goldPrices && result.fxRate) {
+                setGoldPrices(result.goldPrices);
+                setFxRate(result.fxRate);
+                setLastPriceUpdate(new Date());
+              }
             }}
           />
         )}

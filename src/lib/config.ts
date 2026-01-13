@@ -50,6 +50,7 @@ export type TransactionType = "SELL" | "BUY" | "TRADE" | "FIX";
 export type ItemCategory = "JEWELRY" | "COIN" | "INGOT" | "FIX";
 export type ItemSource = "BTC" | "OTHER";
 export type Direction = "IN" | "OUT";
+export type CogsCurrency = "USD" | "EGP";
 
 export interface Item {
   id: string;
@@ -58,6 +59,7 @@ export interface Item {
   weightGrams: number;
   karat: Karat;
   cogsFromTag?: number;
+  cogsCurrency?: CogsCurrency;
   sku?: string;
   category: ItemCategory;
   source?: ItemSource;

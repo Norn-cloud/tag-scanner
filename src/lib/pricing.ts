@@ -19,7 +19,19 @@ function roundDown(value: number, nearest: number): number {
 }
 
 function getGoldPrice(prices: GoldPrices, karat: 18 | 21 | 24): number {
-  return prices[`k${karat}` as keyof GoldPrices] || 0;
+  const price = prices[`k${karat}` as keyof GoldPrices];
+  if (!price || price <= 0 || !Number.isFinite(price)) {
+    return 0;
+  }
+  return price;
+}
+
+export function validateGoldPrices(prices: GoldPrices): { valid: boolean; missing: number[] } {
+  const missing: number[] = [];
+  if (!prices.k18 || prices.k18 <= 0) missing.push(18);
+  if (!prices.k21 || prices.k21 <= 0) missing.push(21);
+  if (!prices.k24 || prices.k24 <= 0) missing.push(24);
+  return { valid: missing.length === 0, missing };
 }
 
 function getItemGoldValue(item: Item, goldPrices: GoldPrices): number {
@@ -34,16 +46,15 @@ function getItemCogs(item: Item, fxRate: number): number {
     return GOLD_CONFIG.usedGold.avgCogsEgp * item.weightGrams;
   }
   
-  if (item.origin === "IT") {
-    const cogsUsd = item.cogsFromTag ?? GOLD_CONFIG.italianCogsUsd;
-    return cogsUsd * fxRate * item.weightGrams;
+  if (!item.cogsFromTag) {
+    if (item.origin === "IT") return GOLD_CONFIG.italianCogsUsd * fxRate * item.weightGrams;
+    if (item.origin === "LX") return GOLD_CONFIG.luxCogsEgp * item.weightGrams;
+    return GOLD_CONFIG.egyptianCogsEgp * item.weightGrams;
   }
   
-  if (item.origin === "LX") {
-    return (item.cogsFromTag ?? GOLD_CONFIG.luxCogsEgp) * item.weightGrams;
-  }
-  
-  return (item.cogsFromTag ?? GOLD_CONFIG.egyptianCogsEgp) * item.weightGrams;
+  const isUsd = item.cogsCurrency === "USD";
+  const cogsEgp = isUsd ? item.cogsFromTag * fxRate : item.cogsFromTag;
+  return cogsEgp * item.weightGrams;
 }
 
 function getItemMarkup(item: Item): number {

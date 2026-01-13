@@ -16,6 +16,7 @@ import type * as http from "../http.js";
 import type * as items from "../items.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as ocr from "../ocr.js";
+import type * as pricesFetch from "../pricesFetch.js";
 import type * as transactions from "../transactions.js";
 import type * as twilioOtp from "../twilioOtp.js";
 
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   items: typeof items;
   "lib/auth": typeof lib_auth;
   ocr: typeof ocr;
+  pricesFetch: typeof pricesFetch;
   transactions: typeof transactions;
   twilioOtp: typeof twilioOtp;
 }>;

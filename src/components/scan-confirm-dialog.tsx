@@ -38,11 +38,14 @@ interface ScanConfirmDialogProps {
   onConfirm: (data: ConfirmedScanData) => void;
 }
 
+export type CogsCurrency = "USD" | "EGP";
+
 export interface ConfirmedScanData {
   origin: Origin;
   weightGrams: number;
   karat: Karat;
   cogsFromTag?: number;
+  cogsCurrency: CogsCurrency;
   sku?: string;
   category: ItemCategory;
   isLightPiece: boolean;
@@ -60,6 +63,7 @@ export function ScanConfirmDialog({
   const [weight, setWeight] = useState("");
   const [karat, setKarat] = useState<Karat>(21);
   const [cogs, setCogs] = useState("");
+  const [cogsCurrency, setCogsCurrency] = useState<CogsCurrency>("EGP");
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState<ItemCategory>("JEWELRY");
   const [isLightPiece, setIsLightPiece] = useState(false);
@@ -71,11 +75,18 @@ export function ScanConfirmDialog({
       setCogs(scanResult.cogs?.toString() ?? "");
       setSku(scanResult.sku ?? "");
       const detectedOrigin = parseOrigin(scanResult.origin);
-      setOrigin(detectedOrigin ?? inferOriginFromCogs(scanResult.cogs));
+      const finalOrigin = detectedOrigin ?? inferOriginFromCogs(scanResult.cogs);
+      setOrigin(finalOrigin);
+      setCogsCurrency(finalOrigin === "IT" ? "USD" : "EGP");
       setCategory("JEWELRY");
       setIsLightPiece(false);
     }
   }, [open, scanResult]);
+
+  function handleOriginChange(newOrigin: Origin) {
+    setOrigin(newOrigin);
+    setCogsCurrency(newOrigin === "IT" ? "USD" : "EGP");
+  }
 
   function parseOrigin(originStr?: string): Origin | null {
     if (!originStr) return null;
@@ -104,6 +115,7 @@ export function ScanConfirmDialog({
       weightGrams: weightNum,
       karat,
       cogsFromTag: cogsNum,
+      cogsCurrency,
       sku: sku || undefined,
       category,
       isLightPiece,
@@ -170,7 +182,7 @@ export function ScanConfirmDialog({
               <Label htmlFor="origin">Origin</Label>
               <Select
                 value={origin}
-                onValueChange={(v) => setOrigin(v as Origin)}
+                onValueChange={(v) => handleOriginChange(v as Origin)}
               >
                 <SelectTrigger id="origin">
                   <SelectValue />
@@ -185,15 +197,30 @@ export function ScanConfirmDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="cogs">COGS</Label>
-              <Input
-                id="cogs"
-                type="number"
-                step="0.01"
-                value={cogs}
-                onChange={(e) => setCogs(e.target.value)}
-                placeholder={origin === "IT" ? "USD" : "EGP"}
-              />
+              <Label htmlFor="cogs">COGS (per gram)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="cogs"
+                  type="number"
+                  step="0.01"
+                  value={cogs}
+                  onChange={(e) => setCogs(e.target.value)}
+                  placeholder="0.00"
+                  className="flex-1"
+                />
+                <Select
+                  value={cogsCurrency}
+                  onValueChange={(v) => setCogsCurrency(v as CogsCurrency)}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EGP">EGP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-1.5">
