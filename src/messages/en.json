@@ -98,7 +98,10 @@
     "deduction": "Deduction",
     "markup": "Markup",
     "priceAdjustment": "Price Adjustment",
-    "recommended": "Recommended"
+    "recommended": "Recommended",
+    "floor": "Floor",
+    "standard": "Standard",
+    "max": "Max"
   },
   "warnings": {
     "belowRecommended": "Below recommended price",

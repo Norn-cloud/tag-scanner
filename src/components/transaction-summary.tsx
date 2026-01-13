@@ -79,7 +79,7 @@ export function TransactionSummary({
                   {sliderValue}%
                 </div>
                 <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                  Markup
+                  {t("prices.markup")}
                 </div>
               </div>
             )}
@@ -112,14 +112,14 @@ export function TransactionSummary({
               />
               <div className="flex justify-between text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                 <span className="text-red-500 flex flex-col items-start gap-0.5">
-                  <span>Floor (0%)</span>
+                  <span>{t("prices.floor")} (0%)</span>
                   <span className="text-[9px] opacity-70 tabular-nums">{floor.toLocaleString("en-EG")}</span>
                 </span>
                 <span className="text-foreground flex flex-col items-center gap-0.5">
-                  <span>Standard (100%)</span>
+                  <span>{t("prices.standard")} (100%)</span>
                 </span>
                 <span className="flex flex-col items-end gap-0.5">
-                  <span>Max (150%)</span>
+                  <span>{t("prices.max")} (150%)</span>
                 </span>
               </div>
           </div>

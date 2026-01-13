@@ -103,6 +103,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
             <Label>{t("common.weight")} (g)</Label>
             <Input
               type="number"
+              inputMode="decimal"
               step="0.001"
               placeholder="4.380"
               value={formData.weightGrams}
@@ -176,6 +177,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
               <Label>{t("common.weight")} (g)</Label>
               <Input
                 type="number"
+                inputMode="decimal"
                 step="0.001"
                 placeholder="4.380"
                 value={formData.weightGrams}
@@ -214,6 +216,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
               </div>
               <Input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 placeholder={formData.cogsCurrency === "USD" ? "50" : "2500"}
                 value={formData.cogsFromTag}
@@ -295,6 +298,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
             />
           </div>
 
+          {/* SKU field temporarily disabled
           <div className="space-y-2">
             <Label>{t("common.sku")}</Label>
             <Input
@@ -303,6 +307,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
               onChange={(e) => updateField("sku", e.target.value)}
             />
           </div>
+          */}
         </>
       )}
 

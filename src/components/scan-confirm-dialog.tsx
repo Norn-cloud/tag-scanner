@@ -153,6 +153,7 @@ export function ScanConfirmDialog({
               <Input
                 id="weight"
                 type="number"
+                inputMode="decimal"
                 step="0.001"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
@@ -240,6 +241,7 @@ export function ScanConfirmDialog({
               </Select>
             </div>
 
+            {/* SKU field temporarily disabled
             <div className="space-y-1.5">
               <Label htmlFor="sku">SKU</Label>
               <Input
@@ -249,6 +251,7 @@ export function ScanConfirmDialog({
                 placeholder="Optional"
               />
             </div>
+            */}
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">

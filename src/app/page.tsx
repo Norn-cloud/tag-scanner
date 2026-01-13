@@ -60,6 +60,7 @@ export default function Home() {
   const [pendingScan, setPendingScan] = useState<{
     result: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number };
     imageData: string;
+    scanStartedTab: TransactionType;
   } | null>(null);
 
   const scanTag = useAction(api.ocr.scanTag);
@@ -69,7 +70,7 @@ export default function Home() {
     type: activeTab,
     goldPrices,
     fxRate,
-    deductionPercent: activeTab === "TRADE" ? 0 : GOLD_CONFIG.deduction.default,
+    deductionPercent: activeTab === "TRADE" || activeTab === "BUY" ? 0 : GOLD_CONFIG.deduction.default,
     markupMultiplier,
   }), [activeTab, goldPrices, fxRate, markupMultiplier]);
 
@@ -138,6 +139,7 @@ export default function Home() {
   }, []);
 
   const handleCapture = useCallback(async (imageData: string) => {
+    const capturedTab = activeTab;
     setShowCamera(false);
     setIsScanning(true);
     
@@ -147,6 +149,7 @@ export default function Home() {
       setPendingScan({
         result: result.parsed,
         imageData,
+        scanStartedTab: capturedTab,
       });
       setShowScanConfirm(true);
     } catch (error) {
@@ -155,9 +158,10 @@ export default function Home() {
     } finally {
       setIsScanning(false);
     }
-  }, [scanTag]);
+  }, [scanTag, activeTab]);
 
   const handleScanConfirm = useCallback((data: ConfirmedScanData) => {
+    const tabAtScan = pendingScan?.scanStartedTab ?? activeTab;
     const newItem: Item = {
       id: crypto.randomUUID(),
       origin: data.origin,
@@ -170,12 +174,12 @@ export default function Home() {
       category: data.category,
       isLightPiece: data.isLightPiece,
       tagImageUrl: data.tagImageUrl,
-      direction: activeTab === "BUY" ? "IN" : "OUT",
+      direction: tabAtScan === "BUY" ? "IN" : "OUT",
     };
 
     setItems((prev) => [...prev, newItem]);
     setPendingScan(null);
-  }, [activeTab]);
+  }, [activeTab, pendingScan?.scanStartedTab]);
 
   const toggleLocale = async () => {
     const newLocale = locale === "ar" ? "en" : "ar";

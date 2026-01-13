@@ -58,16 +58,16 @@ export function ItemCard({
               variant={item.condition === "USED" ? "secondary" : "outline"}
               className="h-5 px-1.5 text-[10px] font-normal tracking-wide uppercase shrink-0"
             >
-              {item.condition === "USED" ? "USED" : "NEW"}
+              {item.condition === "USED" ? t("item.used") : t("item.new")}
             </Badge>
             {item.isLightPiece && (
               <Badge variant="secondary" className="h-5 px-1.5 text-[10px] shrink-0">
-                LIGHT
+                {t("item.lightPiece")}
               </Badge>
             )}
             {item.direction === "IN" && (
               <Badge variant="secondary" className="h-5 px-1.5 text-[10px] shrink-0">
-                IN
+                {t("transaction.totalIn").split(" ")[0]}
               </Badge>
             )}
           </div>
@@ -80,7 +80,7 @@ export function ItemCard({
                 {price.toLocaleString("en-EG")}
               </div>
               <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">
-                EGP
+                {t("common.egp")}
               </div>
             </div>
           )}

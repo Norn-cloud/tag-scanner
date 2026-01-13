@@ -98,7 +98,10 @@
     "deduction": "الخصم",
     "markup": "المصنعية",
     "priceAdjustment": "تعديل السعر",
-    "recommended": "الموصى به"
+    "recommended": "الموصى به",
+    "floor": "الحد الأدنى",
+    "standard": "المعيار",
+    "max": "الحد الأقصى"
   },
   "warnings": {
     "belowRecommended": "أقل من السعر الموصى به",

@@ -96,7 +96,7 @@ export function calculateTransactionTotals(
   const adjustedMarkup = outMarkup * ctx.markupMultiplier;
   const adjustedOutPrice = roundUp(floor + adjustedMarkup, GOLD_CONFIG.rounding.nearest);
   
-  const deduction = ctx.type === "TRADE" ? GOLD_CONFIG.deduction.trade : ctx.deductionPercent;
+  const deduction = (ctx.type === "TRADE" || ctx.type === "BUY") ? 0 : ctx.deductionPercent;
   const inPrice = roundDown(inGoldValue * (1 - deduction), GOLD_CONFIG.rounding.nearest);
   
   const totalOut = adjustedOutPrice;
@@ -172,7 +172,7 @@ export function getItemDisplayPrice(item: Item, rawCtx: TransactionContext): num
   }
   
   if (item.direction === "IN") {
-    const deduction = ctx.type === "TRADE" ? GOLD_CONFIG.deduction.trade : ctx.deductionPercent;
+    const deduction = (ctx.type === "TRADE" || ctx.type === "BUY") ? 0 : ctx.deductionPercent;
     return roundDown(goldValue * (1 - deduction), GOLD_CONFIG.rounding.nearest);
   }
   

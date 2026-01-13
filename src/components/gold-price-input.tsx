@@ -60,6 +60,7 @@ export function GoldPriceInput({
               <Label className="text-xs">{k}K (EGP/g)</Label>
               <Input
                 type="number"
+                inputMode="decimal"
                 value={prices[`k${k}`]}
                 onChange={(e) => onPriceChange(k, parseFloat(e.target.value) || 0)}
                 className="text-center tabular-nums"
@@ -74,6 +75,7 @@ export function GoldPriceInput({
           <Label className="text-xs">{t("prices.usdToEgp")}</Label>
           <Input
             type="number"
+            inputMode="decimal"
             step="0.01"
             value={fxRate}
             onChange={(e) => onFxChange(parseFloat(e.target.value) || 0)}
