@@ -48,7 +48,7 @@ export const scanTag = action({
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.0-flash",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: tagSchema,
@@ -73,13 +73,14 @@ Return null for any field not clearly visible.`;
 
     const response = result.response.text();
     
-    let parsed: { weight?: number; karat?: number; sku?: string; cogs?: number } = {};
+    let parsed: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number } = {};
     
     try {
       const json = JSON.parse(response);
       parsed = {
         weight: json.weight ?? undefined,
         karat: json.karat ?? undefined,
+        origin: json.origin ?? undefined,
         sku: json.sku ?? undefined,
         cogs: json.cogs ?? undefined,
       };

@@ -25,6 +25,7 @@ import type { Origin, Karat, ItemCategory } from "@/lib/config";
 interface ScanResult {
   weight?: number;
   karat?: number;
+  origin?: string;
   sku?: string;
   cogs?: number;
 }
@@ -69,11 +70,21 @@ export function ScanConfirmDialog({
       setKarat((scanResult.karat as Karat) ?? 21);
       setCogs(scanResult.cogs?.toString() ?? "");
       setSku(scanResult.sku ?? "");
-      setOrigin(inferOriginFromCogs(scanResult.cogs));
+      const detectedOrigin = parseOrigin(scanResult.origin);
+      setOrigin(detectedOrigin ?? inferOriginFromCogs(scanResult.cogs));
       setCategory("JEWELRY");
       setIsLightPiece(false);
     }
   }, [open, scanResult]);
+
+  function parseOrigin(originStr?: string): Origin | null {
+    if (!originStr) return null;
+    const upper = originStr.toUpperCase();
+    if (upper === "IT" || upper === "T") return "IT";
+    if (upper === "EG") return "EG";
+    if (upper === "LX") return "LX";
+    return null;
+  }
 
   function inferOriginFromCogs(cogsValue?: number): Origin {
     if (!cogsValue) return "USED";

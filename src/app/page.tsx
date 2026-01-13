@@ -60,7 +60,7 @@ export default function Home() {
   const [isScanning, setIsScanning] = useState(false);
   const [showScanConfirm, setShowScanConfirm] = useState(false);
   const [pendingScan, setPendingScan] = useState<{
-    result: { weight?: number; karat?: number; sku?: string; cogs?: number };
+    result: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number };
     imageData: string;
   } | null>(null);
 
