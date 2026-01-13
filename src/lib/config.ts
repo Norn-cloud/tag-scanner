@@ -35,7 +35,7 @@ export const GOLD_CONFIG = {
   },
 } as const;
 
-export type Origin = "IT" | "EG";
+export type Origin = "IT" | "EG" | "LX" | "USED";
 export type Condition = "NEW" | "USED";
 export type Karat = 18 | 21 | 24;
 export type TransactionType = "SELL" | "BUY" | "TRADE" | "FIX";

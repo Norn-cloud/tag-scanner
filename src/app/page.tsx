@@ -19,6 +19,7 @@ import { GoldPriceInput } from "@/components/gold-price-input";
 import { CameraCapture } from "@/components/camera-capture";
 import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
+import { ScanConfirmDialog, type ConfirmedScanData } from "@/components/scan-confirm-dialog";
 // import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
 import { Settings, Sun, Moon, Camera, PenLine, Loader2, LogOut } from "lucide-react";
@@ -57,6 +58,11 @@ export default function Home() {
   const [showCamera, setShowCamera] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [showScanConfirm, setShowScanConfirm] = useState(false);
+  const [pendingScan, setPendingScan] = useState<{
+    result: { weight?: number; karat?: number; sku?: string; cogs?: number };
+    imageData: string;
+  } | null>(null);
 
   const scanTag = useAction(api.ocr.scanTag);
 
@@ -193,38 +199,43 @@ export default function Home() {
     try {
       const result = await scanTag({ imageBase64: imageData });
       
-      if (result.parsed.weight) {
-        const newItem: Item = {
-          id: crypto.randomUUID(),
-          origin: "EG",
-          condition: "NEW",
-          weightGrams: result.parsed.weight,
-          karat: (result.parsed.karat as 18 | 21 | 24) || 21,
-          cogsFromTag: result.parsed.cogs,
-          sku: result.parsed.sku,
-          category: "JEWELRY",
-          isLightPiece: false,
-          calculatedPrice: 0,
-          adjustedPrice: 0,
-          isLocked: false,
-          direction: "OUT",
-        };
-
-        const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
-        newItem.calculatedPrice = price;
-        newItem.adjustedPrice = price;
-
-        setItems((prev) => [...prev, newItem]);
-      } else {
-        alert("Could not read tag. Please try again or enter manually.");
-      }
+      setPendingScan({
+        result: result.parsed,
+        imageData,
+      });
+      setShowScanConfirm(true);
     } catch (error) {
       console.error("OCR error:", error);
       alert("Scan failed. Please try again or enter manually.");
     } finally {
       setIsScanning(false);
     }
-  }, [scanTag, transactionBase]);
+  }, [scanTag]);
+
+  const handleScanConfirm = useCallback((data: ConfirmedScanData) => {
+    const newItem: Item = {
+      id: crypto.randomUUID(),
+      origin: data.origin,
+      condition: data.origin === "USED" ? "USED" : "NEW",
+      weightGrams: data.weightGrams,
+      karat: data.karat,
+      cogsFromTag: data.cogsFromTag,
+      sku: data.sku,
+      category: data.category,
+      isLightPiece: data.isLightPiece,
+      calculatedPrice: 0,
+      adjustedPrice: 0,
+      isLocked: false,
+      direction: activeTab === "BUY" ? "IN" : "OUT",
+    };
+
+    const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
+    newItem.calculatedPrice = price;
+    newItem.adjustedPrice = price;
+
+    setItems((prev) => [...prev, newItem]);
+    setPendingScan(null);
+  }, [activeTab, transactionBase]);
 
   const toggleLocale = async () => {
     const newLocale = locale === "ar" ? "en" : "ar";
@@ -435,6 +446,25 @@ export default function Home() {
             onMasterSliderChange={handleMasterSlider}
             customerMode={customerMode}
           />
+        </div>
+      )}
+
+      {pendingScan && (
+        <ScanConfirmDialog
+          open={showScanConfirm}
+          onOpenChange={setShowScanConfirm}
+          scanResult={pendingScan.result}
+          imageData={pendingScan.imageData}
+          onConfirm={handleScanConfirm}
+        />
+      )}
+
+      {isScanning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="text-sm text-muted-foreground">Scanning tag...</p>
+          </div>
         </div>
       )}
     </main>
