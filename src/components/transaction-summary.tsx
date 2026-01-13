@@ -56,7 +56,7 @@ export function TransactionSummary({
               </div>
               <Slider
                 value={[sliderValue]}
-                min={50}
+                min={0}
                 max={150}
                 step={1}
                 onValueChange={handleSliderChange}
@@ -67,11 +67,11 @@ export function TransactionSummary({
                 )}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>-50%</span>
+                <span className="text-red-500">0%</span>
                 <span className={warningColors[warningLevel]}>
                   Floor: {floor.toLocaleString("en-EG")}
                 </span>
-                <span>+50%</span>
+                <span>150%</span>
               </div>
             </div>
             <Separator />

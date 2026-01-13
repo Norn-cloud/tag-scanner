@@ -81,9 +81,9 @@ export function calculateTransactionTotals(
   
   const inGoldValue = inItems.reduce((sum, i) => sum + getItemGoldValue(i, ctx.goldPrices), 0);
   
-  const outPremium = outCogs + outMarkup;
-  const adjustedPremium = outPremium * ctx.markupMultiplier;
-  const adjustedOutPrice = roundUp(outGoldValue + adjustedPremium, GOLD_CONFIG.rounding.nearest);
+  const floor = outGoldValue + outCogs;
+  const adjustedMarkup = outMarkup * ctx.markupMultiplier;
+  const adjustedOutPrice = roundUp(floor + adjustedMarkup, GOLD_CONFIG.rounding.nearest);
   
   const deduction = ctx.type === "TRADE" ? GOLD_CONFIG.deduction.trade : ctx.deductionPercent;
   const inPrice = roundDown(inGoldValue * (1 - deduction), GOLD_CONFIG.rounding.nearest);
@@ -96,7 +96,7 @@ export function calculateTransactionTotals(
   
   switch (ctx.type) {
     case "SELL":
-      margin = totalOut - outGoldValue - outCogs;
+      margin = adjustedMarkup;
       marginPercent = totalOut > 0 ? (margin / totalOut) * 100 : 0;
       break;
     case "BUY":
@@ -113,12 +113,10 @@ export function calculateTransactionTotals(
         const addedWeight = i.weightAddedGrams ?? 0;
         return sum + getGoldPrice(ctx.goldPrices, i.karat) * addedWeight;
       }, 0);
-      margin = fixFees;
-      marginPercent = 100;
       return {
         totalGoldValue: addedGoldCost,
         totalCogs: 0,
-        totalMarkup: 0,
+        totalMarkup: fixFees,
         totalPremium: fixFees,
         basePrice: fixFees + addedGoldCost,
         adjustedPrice: fixFees + addedGoldCost,
@@ -134,15 +132,14 @@ export function calculateTransactionTotals(
       marginPercent = 0;
   }
   
-  const floor = outGoldValue;
   const netAmount = totalOut - totalIn;
   
   return {
     totalGoldValue: outGoldValue + inGoldValue,
     totalCogs: outCogs,
     totalMarkup: outMarkup,
-    totalPremium: outPremium,
-    basePrice: outGoldValue + outPremium,
+    totalPremium: outCogs + outMarkup,
+    basePrice: floor + outMarkup,
     adjustedPrice: adjustedOutPrice,
     floor,
     totalIn,
@@ -169,9 +166,8 @@ export function getItemDisplayPrice(item: Item, rawCtx: TransactionContext): num
   }
   
   const cogs = getItemCogs(item, ctx.fxRate);
-  const markup = getItemMarkup(item);
-  const premium = (cogs + markup) * ctx.markupMultiplier;
-  return roundUp(goldValue + premium, GOLD_CONFIG.rounding.nearest);
+  const markup = getItemMarkup(item) * ctx.markupMultiplier;
+  return roundUp(goldValue + cogs + markup, GOLD_CONFIG.rounding.nearest);
 }
 
 export function getWarningLevel(
@@ -188,10 +184,10 @@ export function getWarningLevel(
     return "safe";
   }
   
-  const { adjustedPrice, floor, basePrice } = totals;
+  const { margin, marginPercent } = totals;
   
-  if (adjustedPrice < floor) return "loss";
-  if (adjustedPrice < floor * 1.02) return "danger";
-  if (adjustedPrice < basePrice * 0.95) return "warning";
+  if (margin <= 0) return "loss";
+  if (marginPercent < 1) return "danger";
+  if (marginPercent < 3) return "warning";
   return "safe";
 }

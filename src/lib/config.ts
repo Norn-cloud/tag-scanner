@@ -19,7 +19,7 @@ export const GOLD_CONFIG = {
   },
   
   markup: {
-    min: 0.5,
+    min: 0.0,
     max: 1.5,
     default: 1.0,
   },
