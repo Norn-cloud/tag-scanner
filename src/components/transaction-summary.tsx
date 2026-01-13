@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { type TransactionTotals, type TransactionType } from "@/lib/config";
 import { getWarningLevel } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -25,6 +28,7 @@ export function TransactionSummary({
   customerMode = false,
 }: TransactionSummaryProps) {
   const t = useTranslations();
+  const [isExpanded, setIsExpanded] = useState(false);
   const { totalIn, totalOut, netAmount, margin, marginPercent, floor } = totals;
 
   const isTrade = type === "TRADE";
@@ -43,106 +47,122 @@ export function TransactionSummary({
   };
 
   return (
-    <Card className="sticky bottom-0 border-t-2 shadow-lg">
+    <Card className="sticky bottom-0 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] bg-background/95 backdrop-blur z-50 rounded-none rounded-t-xl transition-all duration-300">
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1 w-12 bg-muted rounded-full cursor-pointer hover:bg-muted-foreground/20 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      />
+      
       <CardContent className="p-4 space-y-4">
-        {!customerMode && !isBuy && (
-          <>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("prices.priceAdjustment")}</span>
-                <span className={cn("font-medium", warningColors[warningLevel])}>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {isTrade ? t("transaction.netAmount") : t("common.total")}
+            </p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold tabular-nums tracking-tight">
+                {(isTrade ? Math.abs(netAmount) : (isBuy ? totalIn : totalOut)).toLocaleString("en-EG")}
+              </span>
+              <span className="text-sm font-medium text-muted-foreground">EGP</span>
+            </div>
+            {isTrade && (
+               <Badge variant={netAmount >= 0 ? "default" : "secondary"} className="mt-1 h-5 text-[10px] px-1.5">
+                 {netAmount >= 0 ? t("transaction.customerPays") : t("transaction.customerReceives")}
+               </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-col items-end gap-2">
+            {!customerMode && !isBuy && (
+              <div className="text-right">
+                <div className={cn("text-2xl font-bold tabular-nums leading-none", warningColors[warningLevel])}>
                   {sliderValue}%
-                </span>
+                </div>
+                <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Markup
+                </div>
               </div>
-              <Slider
+            )}
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 rounded-full"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {!customerMode && !isBuy && (
+          <div className="space-y-3 pt-1">
+             <Slider
                 value={[sliderValue]}
                 min={0}
                 max={150}
                 step={1}
                 onValueChange={handleSliderChange}
                 className={cn(
+                  "py-2 cursor-pointer",
                   warningLevel === "loss" && "[&_[role=slider]]:bg-red-500",
                   warningLevel === "danger" && "[&_[role=slider]]:bg-orange-500",
                   warningLevel === "warning" && "[&_[role=slider]]:bg-yellow-500"
                 )}
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span className="text-red-500">0%</span>
-                <span className={warningColors[warningLevel]}>
-                  Floor: {floor.toLocaleString("en-EG")}
+              <div className="flex justify-between text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                <span className="text-red-500 flex flex-col items-start gap-0.5">
+                  <span>Floor (0%)</span>
+                  <span className="text-[9px] opacity-70 tabular-nums">{floor.toLocaleString("en-EG")}</span>
                 </span>
-                <span>150%</span>
+                <span className="text-foreground flex flex-col items-center gap-0.5">
+                  <span>Standard (100%)</span>
+                </span>
+                <span className="flex flex-col items-end gap-0.5">
+                  <span>Max (150%)</span>
+                </span>
               </div>
-            </div>
-            <Separator />
-          </>
+          </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          {isTrade ? (
-            <>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("transaction.totalIn")}</p>
-                <p className="text-xl font-bold tabular-nums">
-                  {totalIn.toLocaleString("en-EG")}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("transaction.totalOut")}</p>
-                <p className="text-xl font-bold tabular-nums">
-                  {totalOut.toLocaleString("en-EG")}
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="col-span-2">
-              <p className="text-sm text-muted-foreground">{t("common.total")}</p>
-              <p className="text-3xl font-bold tabular-nums">
-                {(isBuy ? totalIn : totalOut).toLocaleString("en-EG")}
-                <span className="text-lg font-normal text-muted-foreground ml-1">EGP</span>
-              </p>
-            </div>
-          )}
-        </div>
-
-        {isTrade && (
-          <>
+        {isExpanded && (
+          <div className="space-y-4 pt-2 animate-in slide-in-from-bottom-5 fade-in duration-300">
             <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {netAmount >= 0 ? t("transaction.customerPays") : t("transaction.customerReceives")}
-                </p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {Math.abs(netAmount).toLocaleString("en-EG")}
-                  <span className="text-base font-normal text-muted-foreground ml-1">EGP</span>
-                </p>
-              </div>
-              <Badge variant={netAmount >= 0 ? "default" : "secondary"} className="text-lg px-3 py-1">
-                {netAmount >= 0 ? "↑" : "↓"}
-              </Badge>
+            
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              {isTrade && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("transaction.totalIn")}</span>
+                    <span className="font-medium tabular-nums">{totalIn.toLocaleString("en-EG")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("transaction.totalOut")}</span>
+                    <span className="font-medium tabular-nums">{totalOut.toLocaleString("en-EG")}</span>
+                  </div>
+                </>
+              )}
+              
+              {!customerMode && (
+                <>
+                  <div className="flex justify-between col-span-2">
+                    <span className="text-muted-foreground">{t("transaction.margin")}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("font-bold tabular-nums", warningColors[warningLevel])}>
+                        {margin > 0 ? "+" : ""}{margin.toLocaleString("en-EG")}
+                      </span>
+                      <Badge 
+                        variant={margin > 0 ? "default" : "destructive"} 
+                        className="h-5 px-1.5 text-[10px]"
+                      >
+                        {marginPercent.toFixed(1)}%
+                      </Badge>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          </>
-        )}
-
-        {!customerMode && (
-          <>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{t("transaction.margin")}</p>
-                <p className={cn("text-xl font-bold tabular-nums", warningColors[warningLevel])}>
-                  {margin > 0 ? "+" : ""}{margin.toLocaleString("en-EG")}
-                </p>
-              </div>
-              <Badge
-                variant={margin > 0 ? "default" : "destructive"}
-                className="text-lg px-3 py-1"
-              >
-                {marginPercent.toFixed(1)}%
-              </Badge>
-            </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

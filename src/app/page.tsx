@@ -8,10 +8,7 @@ import { api } from "../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { LoginForm } from "@/components/login-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { ManualEntryDialog } from "@/components/manual-entry-form";
 import { ItemCard } from "@/components/item-card";
 import { TransactionSummary } from "@/components/transaction-summary";
@@ -21,7 +18,7 @@ import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
 import { ScanConfirmDialog, type ConfirmedScanData } from "@/components/scan-confirm-dialog";
 import { setLocaleCookie } from "@/lib/locale";
-import { Settings, Sun, Moon, Camera, PenLine, Loader2, LogOut } from "lucide-react";
+import { Settings, Sun, Moon, Camera, PenLine, Loader2, LogOut, Eye, EyeOff, Trash2 } from "lucide-react";
 import {
   type Item,
   type TransactionType,
@@ -222,6 +219,14 @@ export default function Home() {
         <div className="container flex h-14 items-center justify-between px-4">
           <h1 className="text-lg font-bold">{t("common.appName")}</h1>
           <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setCustomerMode(!customerMode)}
+              className={customerMode ? "text-primary" : "text-muted-foreground"}
+            >
+              {customerMode ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowPrices(!showPrices)}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -301,47 +306,26 @@ export default function Home() {
               />
             ) : (
               <>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center justify-between text-base">
-                      <span>{t("transaction.newTransaction")}</span>
-                      <div className="flex items-center gap-2">
-                        {!customerMode && items.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearTransaction}
-                            className="text-xs text-muted-foreground"
-                          >
-                            {t("common.clear")}
-                          </Button>
-                        )}
-                        <Badge variant="secondary">{t(`transaction.${activeTab.toLowerCase()}`)}</Badge>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        className="h-20 text-base flex-col gap-2"
-                        variant="outline"
-                        onClick={() => setShowCamera(true)}
-                      >
-                        <Camera className="h-6 w-6" />
-                        <span>{t("common.scan")}</span>
-                      </Button>
-                      <ManualEntryDialog
-                        trigger={
-                          <Button className="h-20 text-base flex-col gap-2" variant="outline">
-                            <PenLine className="h-6 w-6" />
-                            <span>{t("common.manual")}</span>
-                          </Button>
-                        }
-                        onItemAdd={(formData) => addItem(formData)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                {!customerMode && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      className="h-12 text-sm gap-2 shadow-sm"
+                      onClick={() => setShowCamera(true)}
+                    >
+                      <Camera className="h-4 w-4" />
+                      <span>{t("common.scan")}</span>
+                    </Button>
+                    <ManualEntryDialog
+                      trigger={
+                        <Button className="h-12 text-sm gap-2 shadow-sm" variant="outline">
+                          <PenLine className="h-4 w-4" />
+                          <span>{t("common.manual")}</span>
+                        </Button>
+                      }
+                      onItemAdd={(formData) => addItem(formData)}
+                    />
+                  </div>
+                )}
 
                 {items.length > 0 && (
                   <div className="space-y-3">
@@ -349,13 +333,17 @@ export default function Home() {
                       <h3 className="font-medium">
                         {t("common.items")} ({items.length})
                       </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{t("common.customerView")}</span>
-                        <Switch
-                          checked={customerMode}
-                          onCheckedChange={setCustomerMode}
-                        />
-                      </div>
+                      {!customerMode && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearTransaction}
+                          className="h-6 text-xs text-muted-foreground hover:text-destructive gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          {t("common.clear")}
+                        </Button>
+                      )}
                     </div>
 
                     {items.map((item) => (
