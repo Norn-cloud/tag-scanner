@@ -35,7 +35,7 @@ const initialFormData: ItemFormData = {
   origin: "EG",
   condition: "NEW",
   weightGrams: "",
-  karat: 21,
+  karat: 18,
   cogsFromTag: "",
   cogsCurrency: "EGP",
   sku: "",
@@ -234,6 +234,7 @@ export function ManualEntryForm({ onSubmit, onCancel, mode = "sell" }: ManualEnt
                   variant={formData.category === cat ? "default" : "outline"}
                   onClick={() => {
                     updateField("category", cat);
+                    if (cat === "JEWELRY") updateField("karat", 18);
                     if (cat === "COIN") updateField("karat", 21);
                     if (cat === "INGOT") updateField("karat", 24);
                   }}
