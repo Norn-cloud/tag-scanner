@@ -55,9 +55,6 @@ export interface Item {
   source?: ItemSource;
   isLightPiece: boolean;
   isPackagedBtc?: boolean;
-  calculatedPrice: number;
-  adjustedPrice: number;
-  isLocked: boolean;
   tagImageUrl?: string;
   direction: Direction;
 }
@@ -68,17 +65,25 @@ export interface GoldPrices {
   k24: number;
 }
 
-export interface Transaction {
-  id: string;
+export interface TransactionContext {
   type: TransactionType;
-  items: Item[];
+  goldPrices: GoldPrices;
+  fxRate: number;
   deductionPercent: number;
-  goldPricePerGram: GoldPrices;
-  fxRateUsdToEgp: number;
+  markupMultiplier: number;
+}
+
+export interface TransactionTotals {
+  totalGoldValue: number;
+  totalCogs: number;
+  totalMarkup: number;
+  basePrice: number;
+  adjustedPrice: number;
+  floor: number;
   totalIn: number;
   totalOut: number;
   netAmount: number;
-  totalMargin: number;
+  margin: number;
   marginPercent: number;
 }
 

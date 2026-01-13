@@ -20,12 +20,10 @@ import { CameraCapture } from "@/components/camera-capture";
 import { TradeUI } from "@/components/trade-ui";
 import { BuyUI } from "@/components/buy-ui";
 import { ScanConfirmDialog, type ConfirmedScanData } from "@/components/scan-confirm-dialog";
-// import { FixUI, type FixData } from "@/components/fix-ui";
 import { setLocaleCookie } from "@/lib/locale";
 import { Settings, Sun, Moon, Camera, PenLine, Loader2, LogOut } from "lucide-react";
 import {
   type Item,
-  type Transaction,
   type TransactionType,
   type GoldPrices,
   type Origin,
@@ -33,8 +31,10 @@ import {
   type Karat,
   type ItemCategory,
   type ItemSource,
+  type TransactionContext,
+  GOLD_CONFIG,
 } from "@/lib/config";
-import { calculateItemPrice, calculateTransactionTotals } from "@/lib/pricing";
+import { calculateTransactionTotals } from "@/lib/pricing";
 
 const defaultGoldPrices: GoldPrices = {
   k18: 3200,
@@ -59,6 +59,7 @@ export default function Home() {
   const [showPrices, setShowPrices] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [showScanConfirm, setShowScanConfirm] = useState(false);
+  const [markupMultiplier, setMarkupMultiplier] = useState(1.0);
   const [pendingScan, setPendingScan] = useState<{
     result: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number };
     imageData: string;
@@ -66,27 +67,15 @@ export default function Home() {
 
   const scanTag = useAction(api.ocr.scanTag);
 
-  const transactionBase = useMemo(() => ({
-    id: "draft" as const,
+  const ctx: TransactionContext = useMemo(() => ({
     type: activeTab,
-    deductionPercent: activeTab === "TRADE" ? 0 : 0.02,
-    goldPricePerGram: goldPrices,
-    fxRateUsdToEgp: fxRate,
-  }), [activeTab, goldPrices, fxRate]);
+    goldPrices,
+    fxRate,
+    deductionPercent: activeTab === "TRADE" ? 0 : GOLD_CONFIG.deduction.default,
+    markupMultiplier,
+  }), [activeTab, goldPrices, fxRate, markupMultiplier]);
 
-  const transaction: Transaction = useMemo(() => ({
-    ...transactionBase,
-    items,
-    ...calculateTransactionTotals({
-      ...transactionBase,
-      items,
-      totalIn: 0,
-      totalOut: 0,
-      netAmount: 0,
-      totalMargin: 0,
-      marginPercent: 0,
-    }),
-  }), [transactionBase, items]);
+  const totals = useMemo(() => calculateTransactionTotals(items, ctx), [items, ctx]);
 
   interface ItemFormData {
     origin: Origin;
@@ -116,19 +105,12 @@ export default function Home() {
         source: formData.source,
         isLightPiece: formData.isLightPiece,
         isPackagedBtc: formData.isPackagedBtc,
-        calculatedPrice: 0,
-        adjustedPrice: 0,
-        isLocked: false,
         direction: itemDirection,
       };
 
-      const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
-      newItem.calculatedPrice = price;
-      newItem.adjustedPrice = price;
-
       setItems((prev) => [...prev, newItem]);
     },
-    [activeTab, transactionBase]
+    [activeTab]
   );
 
   const addBuyItem = useCallback(
@@ -141,55 +123,20 @@ export default function Home() {
         karat: data.karat,
         category: "JEWELRY",
         isLightPiece: false,
-        calculatedPrice: 0,
-        adjustedPrice: 0,
-        isLocked: false,
         direction: "IN",
       };
 
-      const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
-      newItem.calculatedPrice = price;
-      newItem.adjustedPrice = price;
-
       setItems((prev) => [...prev, newItem]);
     },
-    [transactionBase]
+    []
   );
-
-  // FIX feature disabled for now
-  // const [fixResult, setFixResult] = useState<FixData | null>(null);
-  // const handleFixComplete = useCallback((data: FixData) => {
-  //   setFixResult(data);
-  // }, []);
-
-  const updateItemPrice = useCallback((id: string, price: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, adjustedPrice: price } : item
-      )
-    );
-  }, []);
-
-  const toggleItemLock = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isLocked: !item.isLocked } : item
-      )
-    );
-  }, []);
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const handleMasterSlider = useCallback((multiplier: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.isLocked) return item;
-        const newPrice = item.calculatedPrice * multiplier;
-        return { ...item, adjustedPrice: Math.round(newPrice / 10) * 10 };
-      })
-    );
+  const handleSliderChange = useCallback((value: number) => {
+    setMarkupMultiplier(value / 100);
   }, []);
 
   const handleCapture = useCallback(async (imageData: string) => {
@@ -223,19 +170,13 @@ export default function Home() {
       sku: data.sku,
       category: data.category,
       isLightPiece: data.isLightPiece,
-      calculatedPrice: 0,
-      adjustedPrice: 0,
-      isLocked: false,
+      tagImageUrl: data.tagImageUrl,
       direction: activeTab === "BUY" ? "IN" : "OUT",
     };
 
-    const price = calculateItemPrice(newItem, { ...transactionBase, items: [], totalIn: 0, totalOut: 0, netAmount: 0, totalMargin: 0, marginPercent: 0 });
-    newItem.calculatedPrice = price;
-    newItem.adjustedPrice = price;
-
     setItems((prev) => [...prev, newItem]);
     setPendingScan(null);
-  }, [activeTab, transactionBase]);
+  }, [activeTab]);
 
   const toggleLocale = async () => {
     const newLocale = locale === "ar" ? "en" : "ar";
@@ -245,6 +186,7 @@ export default function Home() {
 
   const clearTransaction = () => {
     setItems([]);
+    setMarkupMultiplier(1.0);
   };
 
   const handleSignOut = async () => {
@@ -331,35 +273,24 @@ export default function Home() {
             <TabsTrigger value="TRADE" className="text-sm">
               {t("transaction.trade")}
             </TabsTrigger>
-            {/* FIX tab hidden for now
-            <TabsTrigger value="FIX" className="text-sm">
-              {t("transaction.fix")}
-            </TabsTrigger>
-            */}
           </TabsList>
 
           <div className="mt-4 space-y-4">
             {activeTab === "TRADE" ? (
               <TradeUI
                 items={items}
-                goldPrices={goldPrices}
+                ctx={ctx}
                 onAddItem={addItem}
-                onUpdatePrice={updateItemPrice}
-                onToggleLock={toggleItemLock}
                 onRemoveItem={removeItem}
                 onShowCamera={() => setShowCamera(true)}
-                customerMode={customerMode}
               />
             ) : activeTab === "BUY" ? (
               <BuyUI
                 items={items}
-                goldPrices={goldPrices}
+                ctx={ctx}
                 onAddItem={addBuyItem}
-                onUpdatePrice={updateItemPrice}
-                onToggleLock={toggleItemLock}
                 onRemoveItem={removeItem}
                 onClear={clearTransaction}
-                customerMode={customerMode}
               />
             ) : (
               <>
@@ -424,11 +355,8 @@ export default function Home() {
                       <ItemCard
                         key={item.id}
                         item={item}
-                        goldPrices={goldPrices}
-                        onPriceChange={updateItemPrice}
-                        onLockToggle={toggleItemLock}
+                        ctx={ctx}
                         onRemove={removeItem}
-                        showSlider={!customerMode}
                       />
                     ))}
                   </div>
@@ -439,11 +367,13 @@ export default function Home() {
         </Tabs>
       </div>
 
-      {items.length > 0 && activeTab !== "FIX" && activeTab !== "TRADE" && (
+      {items.length > 0 && activeTab !== "TRADE" && (
         <div className="fixed bottom-0 left-0 right-0 z-50">
           <TransactionSummary
-            transaction={transaction}
-            onMasterSliderChange={handleMasterSlider}
+            totals={totals}
+            type={activeTab}
+            sliderValue={Math.round(markupMultiplier * 100)}
+            onSliderChange={handleSliderChange}
             customerMode={customerMode}
           />
         </div>

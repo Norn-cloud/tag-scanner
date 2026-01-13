@@ -1,46 +1,58 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { type Transaction } from "@/lib/config";
+import { type TransactionTotals, type TransactionType } from "@/lib/config";
+import { getWarningLevel } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 interface TransactionSummaryProps {
-  transaction: Transaction;
-  onMasterSliderChange: (multiplier: number) => void;
+  totals: TransactionTotals;
+  type: TransactionType;
+  sliderValue: number;
+  onSliderChange: (value: number) => void;
   customerMode?: boolean;
 }
 
 export function TransactionSummary({
-  transaction,
-  onMasterSliderChange,
+  totals,
+  type,
+  sliderValue,
+  onSliderChange,
   customerMode = false,
 }: TransactionSummaryProps) {
   const t = useTranslations();
-  const [sliderValue, setSliderValue] = useState(100);
-  const { type, totalIn, totalOut, netAmount, totalMargin, marginPercent } = transaction;
+  const { totalIn, totalOut, netAmount, margin, marginPercent, floor } = totals;
 
-  const isProfit = totalMargin > 0;
   const isTrade = type === "TRADE";
+  const isBuy = type === "BUY";
+  const warningLevel = getWarningLevel(totals);
+  
+  const warningColors = {
+    safe: "text-green-600 dark:text-green-400",
+    warning: "text-yellow-600 dark:text-yellow-400",
+    danger: "text-orange-600 dark:text-orange-400",
+    loss: "text-red-600 dark:text-red-400",
+  };
 
   const handleSliderChange = (value: number[]) => {
-    setSliderValue(value[0]);
-    onMasterSliderChange(value[0] / 100);
+    onSliderChange(value[0]);
   };
 
   return (
     <Card className="sticky bottom-0 border-t-2 shadow-lg">
       <CardContent className="p-4 space-y-4">
-        {!customerMode && (
+        {!customerMode && !isBuy && (
           <>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("prices.priceAdjustment")}</span>
-                <span className="font-medium">{sliderValue}%</span>
+                <span className={cn("font-medium", warningColors[warningLevel])}>
+                  {sliderValue}%
+                </span>
               </div>
               <Slider
                 value={[sliderValue]}
@@ -48,10 +60,17 @@ export function TransactionSummary({
                 max={120}
                 step={1}
                 onValueChange={handleSliderChange}
+                className={cn(
+                  warningLevel === "loss" && "[&_[role=slider]]:bg-red-500",
+                  warningLevel === "danger" && "[&_[role=slider]]:bg-orange-500",
+                  warningLevel === "warning" && "[&_[role=slider]]:bg-yellow-500"
+                )}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>-20%</span>
-                <span>{t("prices.recommended")}</span>
+                <span className={warningColors[warningLevel]}>
+                  Floor: {floor.toLocaleString("en-EG")}
+                </span>
                 <span>+20%</span>
               </div>
             </div>
@@ -79,7 +98,7 @@ export function TransactionSummary({
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">{t("common.total")}</p>
               <p className="text-3xl font-bold tabular-nums">
-                {(type === "BUY" ? totalIn : totalOut).toLocaleString("en-EG")}
+                {(isBuy ? totalIn : totalOut).toLocaleString("en-EG")}
                 <span className="text-lg font-normal text-muted-foreground ml-1">EGP</span>
               </p>
             </div>
@@ -112,18 +131,12 @@ export function TransactionSummary({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t("transaction.margin")}</p>
-                <p
-                  className={cn(
-                    "text-xl font-bold tabular-nums",
-                    isProfit ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                  )}
-                >
-                  {isProfit ? "+" : ""}
-                  {totalMargin.toLocaleString("en-EG")}
+                <p className={cn("text-xl font-bold tabular-nums", warningColors[warningLevel])}>
+                  {margin > 0 ? "+" : ""}{margin.toLocaleString("en-EG")}
                 </p>
               </div>
               <Badge
-                variant={isProfit ? "default" : "destructive"}
+                variant={margin > 0 ? "default" : "destructive"}
                 className="text-lg px-3 py-1"
               >
                 {marginPercent.toFixed(1)}%

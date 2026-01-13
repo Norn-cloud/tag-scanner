@@ -1,175 +1,113 @@
 import {
   GOLD_CONFIG,
   type Item,
-  type Transaction,
   type GoldPrices,
-  type BtcPriceData,
+  type TransactionContext,
+  type TransactionTotals,
 } from "./config";
 
-export function roundUp(value: number, nearest: number): number {
+function roundUp(value: number, nearest: number): number {
   return Math.ceil(value / nearest) * nearest;
 }
 
-export function roundDown(value: number, nearest: number): number {
+function roundDown(value: number, nearest: number): number {
   return Math.floor(value / nearest) * nearest;
 }
 
-export function getGoldPrice(prices: GoldPrices, karat: 18 | 21 | 24): number {
-  const key = `k${karat}` as keyof GoldPrices;
-  return prices[key];
+function getGoldPrice(prices: GoldPrices, karat: 18 | 21 | 24): number {
+  return prices[`k${karat}` as keyof GoldPrices];
 }
 
-export function calculateSellPrice(
-  item: Item,
-  goldPrices: GoldPrices,
-  fxRate: number,
-  btcLookup?: (category: string, weight: number) => BtcPriceData | undefined
-): number {
-  const goldPrice = getGoldPrice(goldPrices, item.karat);
-
-  if (item.source === "BTC" && btcLookup) {
-    const btcData = btcLookup(item.category, item.weightGrams);
-    if (btcData) {
-      return (goldPrice + btcData.markupEgp) * item.weightGrams;
-    }
-  }
-
-  let cogs: number;
-  let markup: number;
-
-  const isUsed = item.condition === "USED";
-
-  if (isUsed) {
-    cogs = GOLD_CONFIG.usedGold.avgCogsEgp;
-    markup = GOLD_CONFIG.usedGold.avgMarkupEgp;
-  } else if (item.origin === "IT") {
-    cogs = (item.cogsFromTag ?? GOLD_CONFIG.italianCogsUsd) * fxRate;
-    markup = item.isLightPiece
-      ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
-      : GOLD_CONFIG.standardMarkupEgp;
-  } else {
-    cogs = item.cogsFromTag ?? GOLD_CONFIG.usedGold.avgCogsEgp;
-    markup = item.isLightPiece
-      ? GOLD_CONFIG.standardMarkupEgp * GOLD_CONFIG.lightPieceMarkupMultiplier
-      : GOLD_CONFIG.standardMarkupEgp;
-  }
-
-  const rawPrice = (goldPrice + cogs + markup) * item.weightGrams;
-  return roundUp(rawPrice, GOLD_CONFIG.rounding.nearest);
+function getItemGoldValue(item: Item, goldPrices: GoldPrices): number {
+  return getGoldPrice(goldPrices, item.karat) * item.weightGrams;
 }
 
-export function calculateBuyPrice(
-  item: Item,
-  goldPrices: GoldPrices,
-  deductionPercent: number,
-  btcLookup?: (category: string, weight: number) => BtcPriceData | undefined
-): number {
-  const goldPrice = getGoldPrice(goldPrices, item.karat);
-
-  if (item.source === "BTC" && btcLookup) {
-    const btcData = btcLookup(item.category, item.weightGrams);
-    if (btcData) {
-      const cashback = item.isPackagedBtc
-        ? btcData.cashbackPackagedEgp
-        : btcData.cashbackUnpackagedEgp;
-      return (goldPrice - cashback) * item.weightGrams;
-    }
+function getItemCogs(item: Item, fxRate: number): number {
+  if (item.condition === "USED") {
+    return GOLD_CONFIG.usedGold.avgCogsEgp * item.weightGrams;
   }
-
-  const baseValue = goldPrice * item.weightGrams;
-  const afterDeduction = baseValue * (1 - deductionPercent);
-  return roundDown(afterDeduction, GOLD_CONFIG.rounding.nearest);
+  
+  if (item.origin === "IT") {
+    const cogsUsd = item.cogsFromTag ?? GOLD_CONFIG.italianCogsUsd;
+    return cogsUsd * fxRate * item.weightGrams;
+  }
+  
+  return (item.cogsFromTag ?? GOLD_CONFIG.usedGold.avgCogsEgp) * item.weightGrams;
 }
 
-export function calculateFixPrice(
-  item: Item,
-  goldPrices: GoldPrices,
-  fixFee: number,
-  weightAddedGrams: number = 0
-): number {
-  const goldPrice = getGoldPrice(goldPrices, item.karat);
-  const addedGoldCost = weightAddedGrams * goldPrice;
-  return fixFee + addedGoldCost;
+function getItemMarkup(item: Item): number {
+  if (item.condition === "USED") {
+    return GOLD_CONFIG.usedGold.avgMarkupEgp * item.weightGrams;
+  }
+  
+  const baseMarkup = GOLD_CONFIG.standardMarkupEgp;
+  const multiplier = item.isLightPiece ? GOLD_CONFIG.lightPieceMarkupMultiplier : 1;
+  return baseMarkup * multiplier * item.weightGrams;
 }
 
-export function calculateItemPrice(
-  item: Item,
-  tx: Transaction,
-  btcLookup?: (category: string, weight: number) => BtcPriceData | undefined
-): number {
-  switch (tx.type) {
-    case "SELL":
-      return calculateSellPrice(item, tx.goldPricePerGram, tx.fxRateUsdToEgp, btcLookup);
-
-    case "BUY":
-      return calculateBuyPrice(item, tx.goldPricePerGram, tx.deductionPercent, btcLookup);
-
-    case "TRADE":
-      if (item.direction === "OUT") {
-        return calculateSellPrice(item, tx.goldPricePerGram, tx.fxRateUsdToEgp, btcLookup);
-      }
-      return calculateBuyPrice(item, tx.goldPricePerGram, 0, btcLookup);
-
-    case "FIX":
-      return calculateFixPrice(item, tx.goldPricePerGram, GOLD_CONFIG.fixes.defaultEgp);
-
-    default:
-      return 0;
-  }
-}
-
-export function calculateTransactionTotals(tx: Transaction): {
-  totalIn: number;
-  totalOut: number;
-  netAmount: number;
-  totalMargin: number;
-  marginPercent: number;
-} {
-  let totalIn = 0;
-  let totalOut = 0;
-  let totalCogs = 0;
-
-  for (const item of tx.items) {
-    const price = item.adjustedPrice || item.calculatedPrice;
-
-    if (item.direction === "IN") {
-      totalIn += price;
-    } else {
-      totalOut += price;
-    }
-
-    const goldPrice = getGoldPrice(tx.goldPricePerGram, item.karat);
-    totalCogs += goldPrice * item.weightGrams;
-  }
-
+export function calculateTransactionTotals(
+  items: Item[],
+  ctx: TransactionContext
+): TransactionTotals {
+  const outItems = items.filter(i => i.direction === "OUT");
+  const inItems = items.filter(i => i.direction === "IN");
+  
+  const outGoldValue = outItems.reduce((sum, i) => sum + getItemGoldValue(i, ctx.goldPrices), 0);
+  const outCogs = outItems.reduce((sum, i) => sum + getItemCogs(i, ctx.fxRate), 0);
+  const outMarkup = outItems.reduce((sum, i) => sum + getItemMarkup(i), 0);
+  
+  const inGoldValue = inItems.reduce((sum, i) => sum + getItemGoldValue(i, ctx.goldPrices), 0);
+  
+  const baseOutPrice = outGoldValue + outCogs + outMarkup;
+  const adjustedOutPrice = roundUp(baseOutPrice * ctx.markupMultiplier, GOLD_CONFIG.rounding.nearest);
+  
+  const deduction = ctx.type === "TRADE" ? 0 : ctx.deductionPercent;
+  const inPrice = roundDown(inGoldValue * (1 - deduction), GOLD_CONFIG.rounding.nearest);
+  
+  const totalOut = adjustedOutPrice;
+  const totalIn = inPrice;
   const netAmount = totalOut - totalIn;
-  const totalMargin = totalOut - totalCogs;
-  const marginPercent = totalOut > 0 ? (totalMargin / totalOut) * 100 : 0;
-
+  
+  const floor = outGoldValue;
+  const margin = adjustedOutPrice - floor;
+  const marginPercent = adjustedOutPrice > 0 ? (margin / adjustedOutPrice) * 100 : 0;
+  
   return {
+    totalGoldValue: outGoldValue + inGoldValue,
+    totalCogs: outCogs,
+    totalMarkup: outMarkup,
+    basePrice: baseOutPrice,
+    adjustedPrice: adjustedOutPrice,
+    floor,
     totalIn,
     totalOut,
     netAmount,
-    totalMargin,
+    margin,
     marginPercent,
   };
 }
 
-export function getCogsFloor(item: Item, goldPrices: GoldPrices): number {
-  const goldPrice = getGoldPrice(goldPrices, item.karat);
-  return goldPrice * item.weightGrams;
+export function getItemDisplayPrice(item: Item, ctx: TransactionContext): number {
+  const goldValue = getItemGoldValue(item, ctx.goldPrices);
+  
+  if (item.direction === "IN") {
+    const deduction = ctx.type === "TRADE" ? 0 : ctx.deductionPercent;
+    return roundDown(goldValue * (1 - deduction), GOLD_CONFIG.rounding.nearest);
+  }
+  
+  const cogs = getItemCogs(item, ctx.fxRate);
+  const markup = getItemMarkup(item);
+  const base = goldValue + cogs + markup;
+  return roundUp(base * ctx.markupMultiplier, GOLD_CONFIG.rounding.nearest);
 }
 
-export function getPriceWarningLevel(
-  item: Item,
-  goldPrices: GoldPrices
+export function getWarningLevel(
+  totals: TransactionTotals
 ): "safe" | "warning" | "danger" | "loss" {
-  const floor = getCogsFloor(item, goldPrices);
-  const price = item.adjustedPrice || item.calculatedPrice;
-  const recommended = item.calculatedPrice;
-
-  if (price < floor) return "loss";
-  if (price < floor * 1.05) return "danger";
-  if (price < recommended * 0.9) return "warning";
+  const { adjustedPrice, floor, basePrice } = totals;
+  
+  if (adjustedPrice < floor) return "loss";
+  if (adjustedPrice < floor * 1.05) return "danger";
+  if (adjustedPrice < basePrice * 0.9) return "warning";
   return "safe";
 }

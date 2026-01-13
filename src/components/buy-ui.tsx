@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ItemCard } from "@/components/item-card";
 import { Plus } from "lucide-react";
-import { type Karat, type GoldPrices, type Item } from "@/lib/config";
+import { type Karat, type Item, type TransactionContext } from "@/lib/config";
+import { calculateTransactionTotals } from "@/lib/pricing";
 
 interface BuyFormData {
   karat: Karat;
@@ -19,24 +18,18 @@ interface BuyFormData {
 
 interface BuyUIProps {
   items: Item[];
-  goldPrices: GoldPrices;
+  ctx: TransactionContext;
   onAddItem: (data: BuyFormData) => void;
-  onUpdatePrice: (id: string, price: number) => void;
-  onToggleLock: (id: string) => void;
   onRemoveItem: (id: string) => void;
   onClear: () => void;
-  customerMode: boolean;
 }
 
 export function BuyUI({
   items,
-  goldPrices,
+  ctx,
   onAddItem,
-  onUpdatePrice,
-  onToggleLock,
   onRemoveItem,
   onClear,
-  customerMode,
 }: BuyUIProps) {
   const t = useTranslations();
   const [karat, setKarat] = useState<Karat>(21);
@@ -55,10 +48,7 @@ export function BuyUI({
     }
   };
 
-  const totalValue = items.reduce(
-    (sum, item) => sum + (item.adjustedPrice || item.calculatedPrice),
-    0
-  );
+  const totals = calculateTransactionTotals(items, ctx);
 
   return (
     <div className="space-y-4">
@@ -135,11 +125,8 @@ export function BuyUI({
               <ItemCard
                 key={item.id}
                 item={item}
-                goldPrices={goldPrices}
-                onPriceChange={onUpdatePrice}
-                onLockToggle={onToggleLock}
+                ctx={ctx}
                 onRemove={onRemoveItem}
-                showSlider={!customerMode}
               />
             ))}
           </div>
@@ -149,7 +136,7 @@ export function BuyUI({
               <div className="flex justify-between items-center">
                 <span className="font-medium">{t("buy.youPay")}</span>
                 <span className="text-2xl font-bold text-primary">
-                  {totalValue.toLocaleString()} {t("common.egp")}
+                  {totals.totalIn.toLocaleString()} {t("common.egp")}
                 </span>
               </div>
             </CardContent>

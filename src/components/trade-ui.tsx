@@ -10,17 +10,15 @@ import { ManualEntryDialog } from "@/components/manual-entry-form";
 import { ItemCard } from "@/components/item-card";
 import { Camera, PenLine, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Item, GoldPrices, Origin, Condition, Karat, ItemCategory, ItemSource } from "@/lib/config";
+import { calculateTransactionTotals, getItemDisplayPrice } from "@/lib/pricing";
+import type { Item, TransactionContext, Origin, Condition, Karat, ItemCategory, ItemSource } from "@/lib/config";
 
 interface TradeUIProps {
   items: Item[];
-  goldPrices: GoldPrices;
+  ctx: TransactionContext;
   onAddItem: (item: ItemFormData, direction: "IN" | "OUT") => void;
-  onUpdatePrice: (id: string, price: number) => void;
-  onToggleLock: (id: string) => void;
   onRemoveItem: (id: string) => void;
   onShowCamera: () => void;
-  customerMode: boolean;
 }
 
 interface ItemFormData {
@@ -38,23 +36,18 @@ interface ItemFormData {
 
 export function TradeUI({
   items,
-  goldPrices,
+  ctx,
   onAddItem,
-  onUpdatePrice,
-  onToggleLock,
   onRemoveItem,
   onShowCamera,
-  customerMode,
 }: TradeUIProps) {
   const t = useTranslations();
   const [activeSection, setActiveSection] = useState<"IN" | "OUT">("IN");
 
   const itemsIn = items.filter((i) => i.direction === "IN");
   const itemsOut = items.filter((i) => i.direction === "OUT");
-
-  const totalIn = itemsIn.reduce((sum, i) => sum + (i.adjustedPrice || i.calculatedPrice), 0);
-  const totalOut = itemsOut.reduce((sum, i) => sum + (i.adjustedPrice || i.calculatedPrice), 0);
-  const netDifference = totalOut - totalIn;
+  
+  const totals = calculateTransactionTotals(items, ctx);
 
   const handleAddItem = (formData: ItemFormData) => {
     onAddItem(formData, activeSection);
@@ -156,7 +149,7 @@ export function TradeUI({
                 {t("trade.customerGives")}
               </div>
               <span className="text-orange-600 font-semibold">
-                {totalIn.toLocaleString()} {t("common.egp")}
+                {totals.totalIn.toLocaleString()} {t("common.egp")}
               </span>
             </CardTitle>
           </CardHeader>
@@ -165,11 +158,8 @@ export function TradeUI({
               <ItemCard
                 key={item.id}
                 item={item}
-                goldPrices={goldPrices}
-                onPriceChange={onUpdatePrice}
-                onLockToggle={onToggleLock}
+                ctx={ctx}
                 onRemove={onRemoveItem}
-                showSlider={!customerMode}
               />
             ))}
           </CardContent>
@@ -185,7 +175,7 @@ export function TradeUI({
                 {t("trade.customerReceives")}
               </div>
               <span className="text-sky-600 font-semibold">
-                {totalOut.toLocaleString()} {t("common.egp")}
+                {totals.totalOut.toLocaleString()} {t("common.egp")}
               </span>
             </CardTitle>
           </CardHeader>
@@ -194,11 +184,8 @@ export function TradeUI({
               <ItemCard
                 key={item.id}
                 item={item}
-                goldPrices={goldPrices}
-                onPriceChange={onUpdatePrice}
-                onLockToggle={onToggleLock}
+                ctx={ctx}
                 onRemove={onRemoveItem}
-                showSlider={!customerMode}
               />
             ))}
           </CardContent>
@@ -209,8 +196,8 @@ export function TradeUI({
         <Card className="overflow-hidden">
           <div className={cn(
             "h-1",
-            netDifference > 0 ? "bg-green-500" : 
-            netDifference < 0 ? "bg-red-500" : 
+            totals.netAmount > 0 ? "bg-green-500" : 
+            totals.netAmount < 0 ? "bg-red-500" : 
             "bg-muted"
           )} />
           <CardContent className="py-4">
@@ -221,7 +208,7 @@ export function TradeUI({
                   <span className="text-muted-foreground">{t("trade.customerGives")}</span>
                 </div>
                 <span className="font-medium">
-                  {totalIn.toLocaleString()} {t("common.egp")}
+                  {totals.totalIn.toLocaleString()} {t("common.egp")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -230,7 +217,7 @@ export function TradeUI({
                   <span className="text-muted-foreground">{t("trade.customerReceives")}</span>
                 </div>
                 <span className="font-medium">
-                  {totalOut.toLocaleString()} {t("common.egp")}
+                  {totals.totalOut.toLocaleString()} {t("common.egp")}
                 </span>
               </div>
               <Separator />
@@ -239,21 +226,21 @@ export function TradeUI({
                 <div className="text-right">
                   <span className={cn(
                     "text-2xl font-bold",
-                    netDifference > 0 ? "text-green-600" : 
-                    netDifference < 0 ? "text-red-600" : 
+                    totals.netAmount > 0 ? "text-green-600" : 
+                    totals.netAmount < 0 ? "text-red-600" : 
                     "text-foreground"
                   )}>
-                    {Math.abs(netDifference).toLocaleString()} {t("common.egp")}
+                    {Math.abs(totals.netAmount).toLocaleString()} {t("common.egp")}
                   </span>
                   <p className={cn(
                     "text-sm font-medium",
-                    netDifference > 0 ? "text-green-600" : 
-                    netDifference < 0 ? "text-red-600" : 
+                    totals.netAmount > 0 ? "text-green-600" : 
+                    totals.netAmount < 0 ? "text-red-600" : 
                     "text-muted-foreground"
                   )}>
-                    {netDifference > 0 
+                    {totals.netAmount > 0 
                       ? t("trade.customerPays")
-                      : netDifference < 0 
+                      : totals.netAmount < 0 
                         ? t("trade.customerReceivesBack")
                         : t("trade.evenTrade")
                     }
