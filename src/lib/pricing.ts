@@ -50,15 +50,12 @@ function getItemMarkup(item: Item): number {
   if (item.weightGrams <= 0) return 0;
   
   if (item.condition === "USED") {
-    return Math.max(
-      GOLD_CONFIG.usedGold.avgMarkupEgp * item.weightGrams,
-      GOLD_CONFIG.minMarkupEgp
-    );
+    return GOLD_CONFIG.usedGold.avgMarkupEgp * item.weightGrams;
   }
   
   const baseMarkup = GOLD_CONFIG.standardMarkupEgp;
   const multiplier = item.isLightPiece ? GOLD_CONFIG.lightPieceMarkupMultiplier : 1;
-  return Math.max(baseMarkup * multiplier * item.weightGrams, GOLD_CONFIG.minMarkupEgp);
+  return baseMarkup * multiplier * item.weightGrams;
 }
 
 function normalizeContext(ctx: TransactionContext): TransactionContext {

@@ -5,7 +5,6 @@ export const GOLD_CONFIG = {
   
   lightPieceMarkupMultiplier: 2.0,
   standardMarkupEgp: 150,
-  minMarkupEgp: 50,
   
   usedGold: {
     avgCogsEgp: 150,
@@ -15,7 +14,7 @@ export const GOLD_CONFIG = {
   deduction: {
     default: 0.02,
     min: 0.00,
-    max: 0.10,
+    max: 0.03,
     trade: 0.00,
   },
   
