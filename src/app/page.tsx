@@ -352,6 +352,7 @@ export default function Home() {
                         item={item}
                         ctx={ctx}
                         onRemove={removeItem}
+                        showPrice={!customerMode}
                       />
                     ))}
                   </div>

@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Tag Scanner",
   description: "Jewelry tag scanner and pricing calculator",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({

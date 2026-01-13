@@ -45,9 +45,20 @@ export const fetchPrices = action({
       return { success: false, error: "Invalid API response: missing xau or egp" };
     }
 
-    const goldUsdPerOz = 1 / data.usd.xau;
+    const xau = data.usd.xau;
+    const egp = data.usd.egp;
+
+    if (!Number.isFinite(xau) || xau <= 0 || !Number.isFinite(egp) || egp <= 0) {
+      return { success: false, error: "Invalid API response: xau or egp out of range" };
+    }
+
+    if (egp < 10 || egp > 200) {
+      return { success: false, error: `FX rate ${egp} seems unrealistic` };
+    }
+
+    const goldUsdPerOz = 1 / xau;
     const goldUsdPerGram = goldUsdPerOz / TROY_OZ_TO_GRAMS;
-    const fxRate = data.usd.egp;
+    const fxRate = egp;
 
     const gold24kEgp = goldUsdPerGram * fxRate;
     const pricePerGram24K = Math.round(gold24kEgp);
