@@ -1,7 +1,7 @@
 import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
 
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? "";
-const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL ?? "";
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud";
+const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL || "https://placeholder.convex.site";
 
 export const {
   handler,
