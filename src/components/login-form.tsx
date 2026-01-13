@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Mail, Lock, Phone, KeyRound } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 
 type AuthMode = "signIn" | "signUp";
 

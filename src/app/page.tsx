@@ -47,7 +47,6 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
 
   const { data: session, isPending: sessionLoading } = authClient.useSession();
-  const currentUser = useQuery(api.auth.getCurrentUser);
 
   const [activeTab, setActiveTab] = useState<TransactionType>("SELL");
   const [items, setItems] = useState<Item[]>([]);
