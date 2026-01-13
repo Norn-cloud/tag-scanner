@@ -92,7 +92,7 @@ export function calculateTransactionTotals(
   
   const inGoldValue = inItems.reduce((sum, i) => sum + getItemGoldValue(i, ctx.goldPrices), 0);
   
-  const floor = outGoldValue + outCogs;
+  const floor = roundUp(outGoldValue + outCogs, GOLD_CONFIG.rounding.nearest);
   const adjustedMarkup = outMarkup * ctx.markupMultiplier;
   const adjustedOutPrice = roundUp(floor + adjustedMarkup, GOLD_CONFIG.rounding.nearest);
   
