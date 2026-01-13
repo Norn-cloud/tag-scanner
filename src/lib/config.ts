@@ -1,8 +1,11 @@
 export const GOLD_CONFIG = {
   italianCogsUsd: 50,
+  egyptianCogsEgp: 100,
+  luxCogsEgp: 120,
   
   lightPieceMarkupMultiplier: 2.0,
   standardMarkupEgp: 150,
+  minMarkupEgp: 50,
   
   usedGold: {
     avgCogsEgp: 150,
@@ -11,9 +14,15 @@ export const GOLD_CONFIG = {
   
   deduction: {
     default: 0.02,
-    min: 0.01,
-    max: 0.03,
+    min: 0.00,
+    max: 0.10,
     trade: 0.00,
+  },
+  
+  markup: {
+    min: 0.5,
+    max: 1.5,
+    default: 1.0,
   },
   
   fixes: {
@@ -57,6 +66,8 @@ export interface Item {
   isPackagedBtc?: boolean;
   tagImageUrl?: string;
   direction: Direction;
+  fixFee?: number;
+  weightAddedGrams?: number;
 }
 
 export interface GoldPrices {
@@ -77,6 +88,7 @@ export interface TransactionTotals {
   totalGoldValue: number;
   totalCogs: number;
   totalMarkup: number;
+  totalPremium: number;
   basePrice: number;
   adjustedPrice: number;
   floor: number;

@@ -29,7 +29,7 @@ export function TransactionSummary({
 
   const isTrade = type === "TRADE";
   const isBuy = type === "BUY";
-  const warningLevel = getWarningLevel(totals);
+  const warningLevel = getWarningLevel(totals, type);
   
   const warningColors = {
     safe: "text-green-600 dark:text-green-400",
@@ -56,8 +56,8 @@ export function TransactionSummary({
               </div>
               <Slider
                 value={[sliderValue]}
-                min={80}
-                max={120}
+                min={50}
+                max={150}
                 step={1}
                 onValueChange={handleSliderChange}
                 className={cn(
@@ -67,11 +67,11 @@ export function TransactionSummary({
                 )}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>-20%</span>
+                <span>-50%</span>
                 <span className={warningColors[warningLevel]}>
                   Floor: {floor.toLocaleString("en-EG")}
                 </span>
-                <span>+20%</span>
+                <span>+50%</span>
               </div>
             </div>
             <Separator />
