@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -57,14 +56,30 @@ export function ScanConfirmDialog({
   onConfirm,
 }: ScanConfirmDialogProps) {
   const [origin, setOrigin] = useState<Origin>("EG");
-  const [weight, setWeight] = useState(scanResult.weight?.toString() ?? "");
-  const [karat, setKarat] = useState<Karat>(
-    (scanResult.karat as Karat) ?? 21
-  );
-  const [cogs, setCogs] = useState(scanResult.cogs?.toString() ?? "");
-  const [sku, setSku] = useState(scanResult.sku ?? "");
+  const [weight, setWeight] = useState("");
+  const [karat, setKarat] = useState<Karat>(21);
+  const [cogs, setCogs] = useState("");
+  const [sku, setSku] = useState("");
   const [category, setCategory] = useState<ItemCategory>("JEWELRY");
   const [isLightPiece, setIsLightPiece] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setWeight(scanResult.weight?.toString() ?? "");
+      setKarat((scanResult.karat as Karat) ?? 21);
+      setCogs(scanResult.cogs?.toString() ?? "");
+      setSku(scanResult.sku ?? "");
+      setOrigin(inferOriginFromCogs(scanResult.cogs));
+      setCategory("JEWELRY");
+      setIsLightPiece(false);
+    }
+  }, [open, scanResult]);
+
+  function inferOriginFromCogs(cogsValue?: number): Origin {
+    if (!cogsValue) return "USED";
+    if (cogsValue < 100) return "IT";
+    return "EG";
+  }
 
   const weightNum = parseFloat(weight) || 0;
   const cogsNum = parseFloat(cogs) || undefined;
@@ -84,12 +99,6 @@ export function ScanConfirmDialog({
       tagImageUrl: imageData,
     });
     onOpenChange(false);
-  };
-
-  const inferOriginFromCogs = () => {
-    if (!cogsNum) return "USED";
-    if (cogsNum < 100) return "IT";
-    return "EG";
   };
 
   return (

@@ -9,26 +9,31 @@ const tagSchema = {
   properties: {
     weight: {
       type: SchemaType.NUMBER as const,
-      description: "Weight in grams (e.g., 3.45). Extract from text like '3.45g' or '3,45 gr'",
+      description: "Weight in grams (e.g., 3.45). Extract from text like 'W 3.45' or '3,45 gr'",
       nullable: true,
     },
     karat: {
       type: SchemaType.NUMBER as const,
-      description: "Gold purity: 18, 21, or 24. Extract from text like '21K' or '21 karat'",
+      description: "Gold purity: 18, 21, or 24. Extract from text like 'K21' or '21K'",
+      nullable: true,
+    },
+    origin: {
+      type: SchemaType.STRING as const,
+      description: "Origin code: IT (Italian), EG (Egyptian), LX (Lux), T (treat as IT). Look near barcode",
       nullable: true,
     },
     sku: {
       type: SchemaType.STRING as const,
-      description: "Product code/barcode, usually 6-10 digits",
+      description: "Product code/barcode number, usually 6-10 digits",
       nullable: true,
     },
     cogs: {
       type: SchemaType.NUMBER as const,
-      description: "Cost/price in any currency. Extract number only",
+      description: "Cost/price number, usually bottom right of tag. Extract number only",
       nullable: true,
     },
   },
-  required: ["weight", "karat", "sku", "cogs"],
+  required: ["weight", "karat", "origin", "sku", "cogs"],
 } satisfies import("@google/generative-ai").ObjectSchema;
 
 export const scanTag = action({
