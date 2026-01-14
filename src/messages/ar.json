@@ -29,7 +29,9 @@
     "source": "المصدر",
     "other": "أخرى",
     "egp": "ج.م",
-    "grams": "جم"
+    "grams": "جم",
+    "dismiss": "إغلاق",
+    "tryAgain": "حاول مرة أخرى"
   },
   "trade": {
     "customerGives": "يعطي العميل",
@@ -116,5 +118,10 @@
     "usePhoto": "استخدام الصورة",
     "verifyData": "تحقق من البيانات",
     "tagImage": "صورة التاج"
+  },
+  "errors": {
+    "scanErrorTitle": "فشل المسح",
+    "scanFailed": "تعذر قراءة التاج. حاول مرة أخرى أو أدخل يدوياً.",
+    "apiQuotaExceeded": "تم تجاوز حصة API. حاول لاحقاً أو أدخل يدوياً."
   }
 }

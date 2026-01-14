@@ -29,7 +29,9 @@
     "source": "Source",
     "other": "Other",
     "egp": "EGP",
-    "grams": "g"
+    "grams": "g",
+    "dismiss": "Dismiss",
+    "tryAgain": "Try Again"
   },
   "trade": {
     "customerGives": "Customer Gives",
@@ -116,5 +118,10 @@
     "usePhoto": "Use Photo",
     "verifyData": "Verify Scanned Data",
     "tagImage": "Tag Image"
+  },
+  "errors": {
+    "scanErrorTitle": "Scan Failed",
+    "scanFailed": "Could not read the tag. Please try again or enter manually.",
+    "apiQuotaExceeded": "API quota exceeded. Please try again later or enter manually."
   }
 }

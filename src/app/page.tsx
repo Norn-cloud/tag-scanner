@@ -62,6 +62,7 @@ export default function Home() {
     imageData: string;
     scanStartedTab: TransactionType;
   } | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const scanTag = useAction(api.ocr.scanTag);
   const fetchPrices = useAction(api.pricesFetch.fetchPrices);
@@ -142,6 +143,7 @@ export default function Home() {
     const capturedTab = activeTab;
     setShowCamera(false);
     setIsScanning(true);
+    setScanError(null);
     
     try {
       const result = await scanTag({ imageBase64: imageData });
@@ -154,11 +156,16 @@ export default function Home() {
       setShowScanConfirm(true);
     } catch (error) {
       console.error("OCR error:", error);
-      alert("Scan failed. Please try again or enter manually.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      if (errorMessage.includes("429") || errorMessage.includes("quota")) {
+        setScanError(t("errors.apiQuotaExceeded"));
+      } else {
+        setScanError(t("errors.scanFailed"));
+      }
     } finally {
       setIsScanning(false);
     }
-  }, [scanTag, activeTab]);
+  }, [scanTag, activeTab, t]);
 
   const handleScanConfirm = useCallback((data: ConfirmedScanData) => {
     const tabAtScan = pendingScan?.scanStartedTab ?? activeTab;
@@ -394,6 +401,40 @@ export default function Home() {
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin" />
             <p className="text-sm text-muted-foreground">Scanning tag...</p>
+          </div>
+        </div>
+      )}
+
+      {scanError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border rounded-lg p-6 mx-4 max-w-sm w-full shadow-lg">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-1">{t("errors.scanErrorTitle")}</h3>
+                <p className="text-sm text-muted-foreground">{scanError}</p>
+              </div>
+              <div className="flex gap-2 w-full">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setScanError(null)}
+                >
+                  {t("common.dismiss")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    setScanError(null);
+                    setShowCamera(true);
+                  }}
+                >
+                  {t("common.tryAgain")}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
