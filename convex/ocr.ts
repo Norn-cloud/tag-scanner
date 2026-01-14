@@ -46,6 +46,8 @@ export const scanTag = action({
       throw new Error("GEMINI_API_KEY not configured");
     }
 
+    console.log("OCR: Starting scan, image size:", args.imageBase64.length);
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
@@ -61,36 +63,45 @@ export const scanTag = action({
 Look for: weight (in grams), karat (18/21/24), SKU/barcode, and price/cost.
 Return null for any field not clearly visible.`;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType: "image/jpeg",
-          data: base64Data,
-        },
-      },
-    ]);
-
-    const response = result.response.text();
-    
-    let parsed: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number } = {};
+    console.log("OCR: Calling Gemini API...");
     
     try {
-      const json = JSON.parse(response);
-      parsed = {
-        weight: json.weight ?? undefined,
-        karat: json.karat ?? undefined,
-        origin: json.origin ?? undefined,
-        sku: json.sku ?? undefined,
-        cogs: json.cogs ?? undefined,
-      };
-    } catch {
-      parsed = {};
-    }
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Data,
+          },
+        },
+      ]);
 
-    return {
-      rawText: response,
-      parsed,
-    };
+      const response = result.response.text();
+      console.log("OCR: Gemini response:", response);
+      
+      let parsed: { weight?: number; karat?: number; origin?: string; sku?: string; cogs?: number } = {};
+      
+      try {
+        const json = JSON.parse(response);
+        parsed = {
+          weight: json.weight ?? undefined,
+          karat: json.karat ?? undefined,
+          origin: json.origin ?? undefined,
+          sku: json.sku ?? undefined,
+          cogs: json.cogs ?? undefined,
+        };
+      } catch {
+        console.log("OCR: Failed to parse JSON response");
+        parsed = {};
+      }
+
+      return {
+        rawText: response,
+        parsed,
+      };
+    } catch (error) {
+      console.error("OCR: Gemini API error:", error);
+      throw error;
+    }
   },
 });
